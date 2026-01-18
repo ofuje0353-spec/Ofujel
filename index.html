@@ -53,6 +53,38 @@ color:#fff;font-size:15px;transition:all .3s ease}
 .input-group input:focus,.input-group select:focus,.input-group textarea:focus{
 outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.2)}
 /* ========== BEAUTIFUL SEARCH BOX ========== */
+  /* Leaderboard Entry Animation */
+.leaderboard-item {
+  animation: slideInLeft 0.4s ease both;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Empty State Styling */
+.leaderboard-empty {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.leaderboard-empty i {
+  font-size: 64px;
+  color: rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+.leaderboard-empty p {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 16px;
+}
 /* ========== CONFIRMATION MODAL ========== */
 .confirm-modal {
   max-width: 420px;
@@ -1316,6 +1348,11 @@ function toggleAdminSidebar() {
 }
 
 function showAdminSection(section) {
+  // Clean up admin leaderboard listener when leaving
+  if (section !== 'leaderboard') {
+    cleanupAdminLeaderboardListener();
+  }
+  
   document.querySelectorAll('[id^="admin"][id$="Section"]').forEach(s => s.classList.add('hidden'));
   document.getElementById(`admin${section.charAt(0).toUpperCase() + section.slice(1)}Section`).classList.remove('hidden');
   document.querySelectorAll('.admin-nav-item').forEach(i => i.classList.remove('active'));
@@ -1325,8 +1362,12 @@ function showAdminSection(section) {
   if (section === 'tests') loadAdminTests();
   if (section === 'questions') loadTestsForQuestions();
   if (section === 'leaderboard') loadAdminLeaderboard();
+  
+  // Close sidebar on mobile after selection
+  if (window.innerWidth <= 992) {
+    document.getElementById('adminSidebar').classList.remove('active');
+  }
 }
-
 // User Management
 function loadAdminUsers() {
   db.ref('users').on('value', snap => {
@@ -1773,72 +1814,158 @@ function viewCorrection() {
 }
 
 // Leaderboard
+// ========== LEADERBOARD SYSTEM (FIXED) ==========
+let leaderboardListener = null;
+let currentLeaderboardTab = '';
+
 function loadLeaderboard() {
   const tabs = document.getElementById('leaderboardTabs');
-  tabs.innerHTML = '<button class="tab-btn active" onclick="loadLeaderboardData(\'\')">Overall</button>';
+  tabs.innerHTML = '<button class="tab-btn active" data-test="" onclick="switchLeaderboardTab(this, \'\')">Overall</button>';
   
   db.ref('tests').once('value', snap => {
     snap.forEach(child => {
-      tabs.innerHTML += `<button class="tab-btn" onclick="loadLeaderboardData('${child.key}')">${child.val().name}</button>`;
+      tabs.innerHTML += `<button class="tab-btn" data-test="${child.key}" onclick="switchLeaderboardTab(this, '${child.key}')">${child.val().name}</button>`;
     });
   });
   
+  // Load overall leaderboard with real-time updates
   loadLeaderboardData('');
 }
 
+function switchLeaderboardTab(btn, testId) {
+  // Update active tab
+  document.querySelectorAll('#leaderboardTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  
+  // Load data for selected tab
+  loadLeaderboardData(testId);
+}
+
 function loadLeaderboardData(testId) {
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  event?.target?.classList.add('active');
+  currentLeaderboardTab = testId;
   
-  const ref = testId ? db.ref('leaderboard').orderByChild('testId').equalTo(testId) : db.ref('leaderboard');
+  // Remove previous listener to avoid duplicates
+  if (leaderboardListener) {
+    db.ref('leaderboard').off('value', leaderboardListener);
+  }
   
-  ref.once('value', snap => {
-    const entries = [];
-    snap.forEach(child => entries.push(child.val()));
+  const userHighlight = document.getElementById('userHighlight');
+  const list = document.getElementById('leaderboardList');
+  
+  // Show loading
+  list.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  userHighlight.innerHTML = '';
+  
+  // Create real-time listener
+  leaderboardListener = db.ref('leaderboard').on('value', snap => {
+    // Check if we're still on the same tab
+    if (currentLeaderboardTab !== testId) return;
     
-    // Aggregate by user
-    const userScores = {};
+    const entries = [];
+    
+    if (snap.exists()) {
+      snap.forEach(child => {
+        const entry = child.val();
+        // Filter by test if testId is provided
+        if (!testId || entry.testId === testId) {
+          entries.push(entry);
+        }
+      });
+    }
+    
+    if (entries.length === 0) {
+      userHighlight.innerHTML = '';
+      list.innerHTML = `
+        <div class="card" style="text-align:center;padding:60px 20px;">
+          <i class="fas fa-trophy" style="font-size:48px;color:rgba(255,255,255,0.2);margin-bottom:20px;display:block;"></i>
+          <p style="color:rgba(255,255,255,0.5);">No scores yet. Be the first to take a test!</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Aggregate best scores by user
+    const userBestScores = {};
     entries.forEach(e => {
-      if (!userScores[e.userId] || userScores[e.userId].score < e.score) {
-        userScores[e.userId] = e;
+      const key = e.userId;
+      if (!userBestScores[key] || userBestScores[key].score < e.score) {
+        userBestScores[key] = e;
       }
     });
     
-    const sorted = Object.values(userScores).sort((a, b) => b.score - a.score);
+    // Sort by score descending
+    const sorted = Object.values(userBestScores).sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.timestamp - b.timestamp; // Earlier submission wins tie
+    });
     
-    // Find current user position
-    const userPos = sorted.findIndex(e => e.userId === currentUser.id);
-    const userHighlight = document.getElementById('userHighlight');
+    // Find current user's position
+    const userIndex = sorted.findIndex(e => e.userId === currentUser.id);
     
-    if (userPos !== -1) {
-      const u = sorted[userPos];
+    // Render user highlight
+    if (userIndex !== -1) {
+      const u = sorted[userIndex];
       userHighlight.innerHTML = `
-        <div class="leaderboard-item user-highlight">
-          <div class="rank rank-default">#${userPos + 1}</div>
-          <div class="user-avatar">${u.userName.charAt(0)}</div>
+        <div class="leaderboard-item user-highlight" style="animation: pulse 2s infinite;">
+          <div class="rank ${userIndex < 3 ? 'rank-' + (userIndex + 1) : 'rank-default'}">
+            ${userIndex < 3 ? ['🥇', '🥈', '🥉'][userIndex] : '#' + (userIndex + 1)}
+          </div>
+          <div class="user-avatar" style="background:var(--gradient)">${u.userName.charAt(0).toUpperCase()}</div>
           <div class="lb-user-info">
-            <div class="lb-name">${u.userName} (You)</div>
+            <div class="lb-name">${u.userName} <span style="color:var(--accent)">(You)</span></div>
             <div class="lb-dept">${u.department}</div>
           </div>
           <div class="lb-score">${u.score}%</div>
-        </div>`;
+        </div>
+      `;
     } else {
-      userHighlight.innerHTML = '';
+      userHighlight.innerHTML = `
+        <div class="card" style="text-align:center;padding:20px;margin-bottom:20px;border:1px dashed rgba(255,255,255,0.2);">
+          <p style="color:rgba(255,255,255,0.5);margin:0;">
+            <i class="fas fa-info-circle"></i> You haven't taken ${testId ? 'this test' : 'any test'} yet
+          </p>
+        </div>
+      `;
     }
     
-    const list = document.getElementById('leaderboardList');
-    list.innerHTML = sorted.map((e, i) => `
-      <div class="leaderboard-item ${e.userId === currentUser.id ? 'user-highlight' : ''}" data-name="${e.userName.toLowerCase()}">
-        <div class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-default'}">${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}</div>
-        <div class="user-avatar" style="background:${e.userId === currentUser.id ? 'var(--gradient)' : 'var(--glass)'}">${e.userName.charAt(0)}</div>
-        <div class="lb-user-info">
-          <div class="lb-name">${e.userName}${e.userId === currentUser.id ? ' (You)' : ''}</div>
-          <div class="lb-dept">${e.department}</div>
+    // Render full leaderboard
+    list.innerHTML = sorted.map((e, i) => {
+      const isCurrentUser = e.userId === currentUser.id;
+      return `
+        <div class="leaderboard-item ${isCurrentUser ? 'user-highlight' : ''}" 
+             data-name="${e.userName.toLowerCase()}" 
+             style="animation-delay: ${i * 0.05}s">
+          <div class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-default'}">
+            ${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}
+          </div>
+          <div class="user-avatar" style="background:${isCurrentUser ? 'var(--gradient)' : 'var(--glass)'}">
+            ${e.userName.charAt(0).toUpperCase()}
+          </div>
+          <div class="lb-user-info">
+            <div class="lb-name">${e.userName}${isCurrentUser ? ' <span style="color:var(--accent)">(You)</span>' : ''}</div>
+            <div class="lb-dept">${e.department}</div>
+          </div>
+          <div class="lb-score">${e.score}%</div>
         </div>
-        <div class="lb-score">${e.score}%</div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   });
+}
+
+function filterLeaderboard() {
+  const search = document.getElementById('lbSearch').value.toLowerCase();
+  document.querySelectorAll('#leaderboardList .leaderboard-item').forEach(item => {
+    const name = item.dataset.name || '';
+    item.style.display = name.includes(search) ? '' : 'none';
+  });
+}
+
+// Clean up listener when leaving leaderboard section
+function cleanupLeaderboardListener() {
+  if (leaderboardListener) {
+    db.ref('leaderboard').off('value', leaderboardListener);
+    leaderboardListener = null;
+  }
 }
 
 function filterLeaderboard() {
@@ -1849,17 +1976,110 @@ function filterLeaderboard() {
 }
 
 // Admin Leaderboard
+// ========== ADMIN LEADERBOARD (FIXED) ==========
+let adminLeaderboardListener = null;
+let currentAdminLeaderboardTab = '';
+
 function loadAdminLeaderboard() {
   const tabs = document.getElementById('adminLeaderboardTabs');
-  tabs.innerHTML = '<button class="tab-btn active" onclick="loadAdminLeaderboardData(\'\')">Overall</button>';
+  tabs.innerHTML = '<button class="tab-btn active" onclick="switchAdminLeaderboardTab(this, \'\')">Overall</button>';
   
   db.ref('tests').once('value', snap => {
     snap.forEach(child => {
-      tabs.innerHTML += `<button class="tab-btn" onclick="loadAdminLeaderboardData('${child.key}')">${child.val().name}</button>`;
+      tabs.innerHTML += `<button class="tab-btn" onclick="switchAdminLeaderboardTab(this, '${child.key}')">${child.val().name}</button>`;
     });
   });
   
   loadAdminLeaderboardData('');
+}
+
+function switchAdminLeaderboardTab(btn, testId) {
+  document.querySelectorAll('#adminLeaderboardTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadAdminLeaderboardData(testId);
+}
+
+function loadAdminLeaderboardData(testId) {
+  currentAdminLeaderboardTab = testId;
+  
+  if (adminLeaderboardListener) {
+    db.ref('leaderboard').off('value', adminLeaderboardListener);
+  }
+  
+  const content = document.getElementById('adminLeaderboardContent');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  
+  adminLeaderboardListener = db.ref('leaderboard').on('value', snap => {
+    if (currentAdminLeaderboardTab !== testId) return;
+    
+    const entries = [];
+    
+    if (snap.exists()) {
+      snap.forEach(child => {
+        const entry = child.val();
+        if (!testId || entry.testId === testId) {
+          entries.push(entry);
+        }
+      });
+    }
+    
+    if (entries.length === 0) {
+      content.innerHTML = `
+        <div style="text-align:center;padding:40px;">
+          <i class="fas fa-trophy" style="font-size:48px;color:rgba(255,255,255,0.2);margin-bottom:20px;display:block;"></i>
+          <p style="color:rgba(255,255,255,0.5);">No scores recorded yet</p>
+        </div>
+      `;
+      return;
+    }
+    
+    const userBestScores = {};
+    entries.forEach(e => {
+      if (!userBestScores[e.userId] || userBestScores[e.userId].score < e.score) {
+        userBestScores[e.userId] = e;
+      }
+    });
+    
+    const sorted = Object.values(userBestScores).sort((a, b) => b.score - a.score);
+    
+    content.innerHTML = `
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Best Score</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map((e, i) => `
+              <tr>
+                <td>
+                  <span class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-default'}" style="width:40px;height:40px;font-size:14px;">
+                    ${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}
+                  </span>
+                </td>
+                <td><strong>${e.userName}</strong></td>
+                <td>${e.department}</td>
+                <td><span class="points-badge" style="background:var(--success)">${e.score}%</span></td>
+                <td style="color:rgba(255,255,255,0.6);font-size:13px;">${new Date(e.timestamp).toLocaleDateString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  });
+}
+
+function cleanupAdminLeaderboardListener() {
+  if (adminLeaderboardListener) {
+    db.ref('leaderboard').off('value', adminLeaderboardListener);
+    adminLeaderboardListener = null;
+  }
 }
 
 function loadAdminLeaderboardData(testId) {
