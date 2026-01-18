@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CBT Pro - Online Testing Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+--primary:#6366f1;--primary-dark:#4f46e5;--secondary:#ec4899;
+--accent:#06b6d4;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+--dark:#1e1b4b;--light:#f8fafc;--glass:rgba(255,255,255,0.1);
+--gradient:linear-gradient(135deg,#6366f1,#ec4899,#06b6d4);
+--shadow:0 10px 40px rgba(99,102,241,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+body{background:var(--dark);min-height:100vh;overflow-x:hidden}
+.bg-animation{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden}
+.bg-animation span{position:absolute;width:20px;height:20px;background:var(--glass);
+animation:float 25s infinite;border-radius:50%}
+@keyframes float{
+0%,100%{transform:translateY(100vh) rotate(0deg);opacity:0}
+10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh) rotate(720deg);opacity:0}
+}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.btn{padding:12px 28px;border:none;border-radius:12px;cursor:pointer;
+font-weight:600;transition:all .3s cubic-bezier(.4,0,.2,1);
+display:inline-flex;align-items:center;gap:8px;font-size:14px}
+.btn:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.btn:active{transform:scale(.95)}
+.btn-primary{background:var(--gradient);color:#fff}
+.btn-secondary{background:var(--glass);color:#fff;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2)}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-warning{background:var(--warning);color:#fff}
+.card{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);
+border-radius:20px;padding:30px;border:1px solid rgba(255,255,255,.1);
+transition:all .3s ease;animation:fadeInUp .5s ease}
+.card:hover{transform:translateY(-5px);border-color:var(--primary);
+box-shadow:0 20px 40px rgba(99,102,241,.2)}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.input-group{margin-bottom:20px}
+.input-group label{display:block;color:rgba(255,255,255,.7);margin-bottom:8px;font-size:14px}
+.input-group input,.input-group select,.input-group textarea{
+width:100%;padding:14px 18px;background:rgba(255,255,255,.05);
+border:1px solid rgba(255,255,255,.1);border-radius:12px;
+color:#fff;font-size:15px;transition:all .3s ease}
+.input-group input:focus,.input-group select:focus,.input-group textarea:focus{
+outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.2)}
+/* ========== BEAUTIFUL SEARCH BOX ========== */
+.search-box {
+  position: relative;
+  max-width: 400px;
+  width: 100%;
+}
+
+.search-box::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, #6366f1, #ec4899, #06b6d4, #6366f1);
+  background-size: 300% 300%;
+  border-radius: 18px;
+  opacity: 0;
+  z-index: -1;
+  transition: all 0.4s ease;
+  filter: blur(8px);
+}
+
+.search-box:focus-within::before {
+  opacity: 0.7;
+  animation: borderGlow 4s ease infinite;
+}
+
+@keyframes borderGlow {
+  0%, 100% { background-position: 0% 50%; filter: blur(8px); }
+  25% { background-position: 50% 0%; }
+  50% { background-position: 100% 50%; filter: blur(12px); }
+  75% { background-position: 50% 100%; }
+}
+
+.search-box input {
+  width: 100%;
+  padding: 16px 50px 16px 52px;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.08), 
+    rgba(236, 72, 153, 0.05),
+    rgba(6, 182, 212, 0.08));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.search-box input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 300;
+  transition: all 0.4s ease;
+}
+
+.search-box input:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.1), 
+    rgba(236, 72, 153, 0.07),
+    rgba(6, 182, 212, 0.1));
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.12), 
+    rgba(236, 72, 153, 0.08),
+    rgba(6, 182, 212, 0.12));
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15),
+              0 0 0 4px rgba(99, 102, 241, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.search-box input:focus::placeholder {
+  opacity: 0.6;
+  transform: translateX(8px);
+}
+
+.search-box > i,
+.search-box > i.fa-search {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 17px;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  opacity: 0.5;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.search-box:focus-within > i,
+.search-box:focus-within > i.fa-search {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.15) rotate(10deg);
+  filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.6));
+}
+
+/* Clear/Close Button */
+.search-box .search-clear {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  opacity: 0;
+}
+
+.search-box input:not(:placeholder-shown) ~ .search-clear {
+  transform: translateY(-50%) scale(1);
+  opacity: 1;
+}
+
+.search-box .search-clear:hover {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  transform: translateY(-50%) scale(1.15) rotate(90deg);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+/* Loading State */
+.search-box.loading input {
+  padding-right: 55px;
+}
+
+.search-box.loading::after {
+  content: '';
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Search Results Dropdown Preview */
+.search-box .search-results {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  background: linear-gradient(145deg, #2d2a5e, #1e1b4b);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-box:focus-within .search-results.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.search-results .result-item {
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.search-results .result-item:hover {
+  background: rgba(99, 102, 241, 0.2);
+  color: #fff;
+  transform: translateX(5px);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .search-box input {
+    padding: 14px 45px 14px 48px;
+    font-size: 14px;
+  }
+  
+  .search-box > i {
+    left: 18px;
+    font-size: 15px;
+  }
+}
+h1,h2,h3{color:#fff}
+.text-gradient{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hidden{display:none!important}
+/* Toast */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+.toast{padding:16px 24px;border-radius:12px;color:#fff;display:flex;align-items:center;gap:12px;
+animation:slideInRight .3s ease,fadeOut .3s ease 2.7s forwards;min-width:300px;max-width:400px}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(100%)}}
+.toast-success{background:linear-gradient(135deg,#10b981,#059669)}
+.toast-error{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.toast-info{background:linear-gradient(135deg,#6366f1,#4f46e5)}
+.toast-warning{background:linear-gradient(135deg,#f59e0b,#d97706)}
+/* Modal */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);
+display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;
+visibility:hidden;transition:all .3s ease;backdrop-filter:blur(5px)}
+.modal.active{opacity:1;visibility:visible}
+.modal-content{background:linear-gradient(145deg,#2d2a5e,#1e1b4b);border-radius:24px;
+padding:40px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;
+transform:scale(.8);transition:all .3s ease;border:1px solid rgba(255,255,255,.1)}
+.modal.active .modal-content{transform:scale(1)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
+.modal-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;
+transition:all .3s ease;width:40px;height:40px;border-radius:50%;display:flex;
+align-items:center;justify-content:center}
+.modal-close:hover{background:rgba(255,255,255,.1);transform:rotate(90deg)}
+/* Header */
+.header{padding:20px 0;position:relative}
+.nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:50px;height:50px;background:var(--gradient);border-radius:14px;
+display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff}
+.logo-text{font-size:28px;font-weight:700;color:#fff}
+.nav-links{display:flex;gap:15px;flex-wrap:wrap}
+.user-info{display:flex;align-items:center;gap:15px;background:var(--glass);
+padding:10px 20px;border-radius:50px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}
+.user-avatar{width:40px;height:40px;background:var(--gradient);border-radius:50%;
+display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600}
+.user-details span{display:block;font-size:12px;color:rgba(255,255,255,.6)}
+.user-details strong{color:#fff;font-size:14px}
+.points-badge{background:var(--warning);color:#000;padding:6px 14px;border-radius:20px;
+font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px}
+/* Landing Page */
+.landing{text-align:center;padding:60px 20px}
+.landing h1{font-size:clamp(2rem,5vw,4rem);margin-bottom:20px}
+.landing p{color:rgba(255,255,255,.7);font-size:18px;max-width:600px;margin:0 auto 40px}
+.landing-buttons{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:30px;margin-top:60px}
+.feature-card{padding:30px;text-align:center}
+.feature-icon{width:70px;height:70px;background:var(--gradient);border-radius:20px;
+display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;margin:0 auto 20px}
+.feature-card h3{margin-bottom:10px}
+.feature-card p{color:rgba(255,255,255,.6);font-size:14px}
+/* Tests Grid */
+.tests-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:25px}
+.test-card{position:relative;overflow:hidden}
+.test-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--gradient)}
+.test-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.test-title{font-size:20px;font-weight:600;color:#fff}
+.test-badge{background:var(--primary);color:#fff;padding:4px 12px;border-radius:20px;font-size:12px}
+.test-info{display:flex;gap:20px;margin-bottom:20px;color:rgba(255,255,255,.6);font-size:14px}
+.test-info span{display:flex;align-items:center;gap:6px}
+.test-actions{display:flex;gap:10px;flex-wrap:wrap}
+/* Quiz Interface */
+.quiz-container{max-width:900px;margin:0 auto}
+.quiz-header{display:flex;justify-content:space-between;align-items:center;
+flex-wrap:wrap;gap:20px;margin-bottom:30px}
+.quiz-progress{flex:1;min-width:200px}
+.progress-bar{height:8px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gradient);transition:width .5s ease;border-radius:10px}
+.progress-text{font-size:13px;color:rgba(255,255,255,.7);margin-top:8px}
+.quiz-timer{background:var(--glass);padding:12px 24px;border-radius:12px;
+display:flex;align-items:center;gap:10px;color:#fff;font-size:18px;font-weight:600}
+.quiz-timer.warning{color:var(--warning);animation:pulse 1s infinite}
+.quiz-timer.danger{color:var(--danger);animation:shake .5s infinite}
+.question-nav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px;
+padding:20px;background:var(--glass);border-radius:16px}
+.q-nav-btn{width:45px;height:45px;border:none;border-radius:10px;cursor:pointer;
+font-weight:600;transition:all .3s ease;background:rgba(255,255,255,.1);color:#fff}
+.q-nav-btn:hover{transform:scale(1.1)}
+.q-nav-btn.current{background:var(--primary);box-shadow:0 0 20px rgba(99,102,241,.5)}
+.q-nav-btn.answered{background:var(--success)}
+.q-nav-btn.flagged{background:var(--warning)}
+.question-card{animation:fadeIn .3s ease}
+.question-number{color:var(--accent);font-weight:600;margin-bottom:10px}
+.question-text{font-size:20px;color:#fff;margin-bottom:30px;line-height:1.6}
+.options-list{display:flex;flex-direction:column;gap:15px}
+.option{padding:18px 24px;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);
+border-radius:14px;cursor:pointer;transition:all .3s ease;display:flex;align-items:center;gap:15px}
+.option:hover{border-color:var(--primary);background:rgba(99,102,241,.1);transform:translateX(10px)}
+.option.selected{border-color:var(--primary);background:rgba(99,102,241,.2)}
+.option.correct{border-color:var(--success);background:rgba(16,185,129,.2)}
+.option.wrong{border-color:var(--danger);background:rgba(239,68,68,.2)}
+.option-letter{width:35px;height:35px;background:var(--glass);border-radius:50%;
+display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff}
+.option.selected .option-letter{background:var(--primary)}
+.option-text{color:#fff;font-size:16px}
+.quiz-actions{display:flex;justify-content:space-between;margin-top:30px;flex-wrap:wrap;gap:15px}
+/* Results */
+.results-card{text-align:center}
+.score-circle{width:180px;height:180px;border-radius:50%;background:var(--glass);
+margin:0 auto 30px;display:flex;flex-direction:column;align-items:center;
+justify-content:center;border:4px solid var(--primary);position:relative}
+.score-circle::before{content:'';position:absolute;inset:-4px;border-radius:50%;
+background:var(--gradient);z-index:-1;animation:pulse 2s infinite}
+.score-value{font-size:48px;font-weight:700;color:#fff}
+.score-label{color:rgba(255,255,255,.7);font-size:14px}
+.results-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:20px;margin:30px 0}
+.stat-item{padding:20px;background:var(--glass);border-radius:14px}
+.stat-value{font-size:28px;font-weight:700;color:#fff}
+.stat-label{font-size:12px;color:rgba(255,255,255,.6)}
+/* Explanation */
+.explanation-box{background:rgba(6,182,212,.1);border:1px solid var(--accent);
+border-radius:14px;padding:20px;margin-top:20px}
+.explanation-box h4{color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.explanation-box p{color:rgba(255,255,255,.8);line-height:1.6}
+/* Leaderboard */
+.leaderboard-container{max-width:800px;margin:0 auto}
+.leaderboard-tabs{display:flex;gap:10px;margin-bottom:30px;flex-wrap:wrap}
+.tab-btn{padding:12px 24px;background:var(--glass);border:none;color:#fff;
+border-radius:10px;cursor:pointer;transition:all .3s ease;font-weight:500}
+.tab-btn:hover,.tab-btn.active{background:var(--primary)}
+.user-highlight{background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(236,72,153,.2));
+border:2px solid var(--primary);margin-bottom:20px;animation:pulse 2s infinite}
+.leaderboard-item{display:flex;align-items:center;gap:20px;padding:20px;
+background:var(--glass);border-radius:14px;margin-bottom:12px;transition:all .3s ease}
+.leaderboard-item:hover{transform:translateX(10px);background:rgba(255,255,255,.1)}
+.rank{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;
+justify-content:center;font-weight:700;font-size:20px;color:#fff}
+.rank-1{background:linear-gradient(135deg,#ffd700,#ffaa00)}
+.rank-2{background:linear-gradient(135deg,#c0c0c0,#a0a0a0)}
+.rank-3{background:linear-gradient(135deg,#cd7f32,#b87333)}
+.rank-default{background:var(--glass)}
+.lb-user-info{flex:1}
+.lb-name{font-weight:600;color:#fff;font-size:16px}
+.lb-dept{font-size:13px;color:rgba(255,255,255,.6)}
+.lb-score{font-size:24px;font-weight:700;color:var(--accent)}
+/* Admin Panel */
+.admin-sidebar{position:fixed;left:0;top:0;width:280px;height:100%;
+background:linear-gradient(180deg,#2d2a5e,#1e1b4b);padding:30px 20px;
+overflow-y:auto;z-index:100;transition:all .3s ease}
+.admin-main{margin-left:280px;padding:30px;min-height:100vh}
+.admin-nav-item{display:flex;align-items:center;gap:12px;padding:14px 18px;
+color:rgba(255,255,255,.7);border-radius:12px;cursor:pointer;transition:all .3s ease;margin-bottom:8px}
+.admin-nav-item:hover,.admin-nav-item.active{background:var(--glass);color:#fff}
+.admin-nav-item i{width:20px}
+.admin-card{margin-bottom:30px}
+.admin-header{display:flex;justify-content:space-between;align-items:center;
+flex-wrap:wrap;gap:20px;margin-bottom:30px}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th,.admin-table td{padding:15px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1)}
+.admin-table th{color:rgba(255,255,255,.6);font-weight:500;font-size:13px;text-transform:uppercase}
+.admin-table td{color:#fff}
+.admin-table tr:hover{background:rgba(255,255,255,.05)}
+.action-btns{display:flex;gap:8px}
+.icon-btn{width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;
+display:flex;align-items:center;justify-content:center;transition:all .3s ease}
+.icon-btn:hover{transform:scale(1.1)}
+.icon-btn.edit{background:rgba(99,102,241,.2);color:var(--primary)}
+.icon-btn.delete{background:rgba(239,68,68,.2);color:var(--danger)}
+.icon-btn.add{background:rgba(16,185,129,.2);color:var(--success)}
+/* Access Modal */
+.access-modal .modal-content{max-width:450px}
+.access-info{background:var(--glass);border-radius:12px;padding:20px;margin-bottom:25px;
+border-left:4px solid var(--accent)}
+.access-info p{color:rgba(255,255,255,.8);font-size:14px;line-height:1.6}
+.access-info a{color:var(--accent);font-weight:600}
+/* File Upload */
+.file-upload{border:2px dashed rgba(255,255,255,.2);border-radius:16px;
+padding:40px;text-align:center;cursor:pointer;transition:all .3s ease}
+.file-upload:hover{border-color:var(--primary);background:rgba(99,102,241,.1)}
+.file-upload i{font-size:48px;color:var(--primary);margin-bottom:15px}
+.file-upload p{color:rgba(255,255,255,.7)}
+.file-upload input{display:none}
+/* Mobile Menu */
+.mobile-menu-btn{display:none;background:var(--glass);border:none;color:#fff;
+width:50px;height:50px;border-radius:12px;cursor:pointer}
+@media(max-width:992px){
+.admin-sidebar{transform:translateX(-100%)}
+.admin-sidebar.active{transform:translateX(0)}
+.admin-main{margin-left:0}
+.mobile-menu-btn{display:flex;align-items:center;justify-content:center}
+}
+@media(max-width:768px){
+.landing h1{font-size:2rem}
+.nav{flex-direction:column;text-align:center}
+.quiz-header{flex-direction:column}
+.question-nav{justify-content:center}
+.tests-grid{grid-template-columns:1fr}
+.user-info{width:100%;justify-content:center}
+}
+@media(max-width:480px){
+.container{padding:10px}
+.card{padding:20px}
+.btn{padding:10px 20px;font-size:13px}
+.modal-content{padding:25px}
+.q-nav-btn{width:40px;height:40px}
+}
+/* Scrollbar */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,.05)}
+::-webkit-scrollbar-thumb{background:var(--primary);border-radius:10px}
+.loading{display:flex;align-items:center;justify-content:center;padding:60px}
+.spinner{width:50px;height:50px;border:4px solid rgba(255,255,255,.1);
+border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="bg-animation" id="bgAnimation"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Access Modal -->
+<div class="modal active" id="accessModal">
+<div class="modal-content access-modal">
+<div class="modal-header">
+<h2><i class="fas fa-lock"></i> Access Required</h2>
+</div>
+<div class="access-info">
+<p><i class="fas fa-info-circle"></i> To get your access code, please message us on WhatsApp:</p>
+<p style="margin-top:10px;font-size:18px"><a href="https://wa.me/2348107528980" target="_blank">
+<i class="fab fa-whatsapp"></i> 08107528980</a></p>
+</div>
+<div class="input-group">
+<label>Enter Access Code</label>
+<input type="text" id="accessCodeInput" placeholder="Enter your access code">
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="verifyAccess()">
+<i class="fas fa-sign-in-alt"></i> Access System
+</button>
+<div style="text-align:center;margin-top:20px">
+<button class="btn btn-secondary" onclick="showAdminLogin()">
+<i class="fas fa-user-shield"></i> Admin Access
+</button>
+</div>
+</div>
+</div>
+
+<!-- Admin Login Modal -->
+<div class="modal" id="adminLoginModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2><i class="fas fa-user-shield"></i> Admin Login</h2>
+<button class="modal-close" onclick="closeModal('adminLoginModal')">×</button>
+</div>
+<div class="input-group">
+<label>Admin Code</label>
+<input type="password" id="adminCodeInput" placeholder="Enter admin code">
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="verifyAdmin()">
+<i class="fas fa-sign-in-alt"></i> Login as Admin
+</button>
+</div>
+</div>
+
+<!-- Main App Container -->
+<div class="hidden" id="appContainer">
+<!-- Header -->
+<header class="header">
+<div class="container">
+<nav class="nav">
+<div class="logo">
+<div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+<span class="logo-text">CBT<span class="text-gradient">Pro</span></span>
+</div>
+<div class="nav-links" id="userNavLinks">
+<button class="btn btn-secondary" onclick="showSection('tests')">
+<i class="fas fa-book-open"></i> Tests
+</button>
+<button class="btn btn-secondary" onclick="showSection('leaderboard')">
+<i class="fas fa-trophy"></i> Leaderboard
+</button>
+<button class="btn btn-danger" onclick="logout()">
+<i class="fas fa-sign-out-alt"></i> Logout
+</button>
+</div>
+<div class="user-info" id="userInfoBar">
+<div class="user-avatar" id="userAvatar">U</div>
+<div class="user-details">
+<span id="userDeptDisplay">Department</span>
+<strong id="userNameDisplay">User Name</strong>
+</div>
+<div class="points-badge">
+<i class="fas fa-coins"></i>
+<span id="userPointsDisplay">0</span>
+</div>
+</div>
+</nav>
+</div>
+</header>
+
+<!-- Tests Section -->
+<section class="container hidden" id="testsSection">
+<div class="admin-header">
+<h2><i class="fas fa-book-open"></i> Available Tests</h2>
+<div class="search-box">
+  <i class="fas fa-search"></i>
+  <input type="text" id="testSearch" placeholder="Search tests..." oninput="filterTests()">
+  <button class="search-clear" onclick="clearSearch('testSearch')">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
+</div>
+<div class="tests-grid" id="testsGrid">
+<div class="loading"><div class="spinner"></div></div>
+</div>
+</section>
+
+<!-- Quiz Section -->
+<section class="container hidden" id="quizSection">
+<div class="quiz-container">
+<div class="quiz-header">
+<div class="quiz-progress">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<p class="progress-text"><span id="currentQ">1</span> of <span id="totalQ">10</span> questions</p>
+</div>
+<div class="quiz-timer" id="quizTimer"><i class="fas fa-clock"></i> <span id="timerDisplay">00:00</span></div>
+</div>
+<div class="question-nav" id="questionNav"></div>
+<div class="card question-card" id="questionCard">
+<p class="question-number">Question <span id="qNum">1</span></p>
+<p class="question-text" id="questionText">Loading question...</p>
+<div class="options-list" id="optionsList"></div>
+</div>
+<div class="quiz-actions">
+<button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()">
+<i class="fas fa-arrow-left"></i> Previous
+</button>
+<button class="btn btn-warning" onclick="flagQuestion()">
+<i class="fas fa-flag"></i> Flag
+</button>
+<button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+Next <i class="fas fa-arrow-right"></i>
+</button>
+<button class="btn btn-success hidden" id="submitBtn" onclick="submitQuiz()">
+<i class="fas fa-check"></i> Submit
+</button>
+</div>
+</div>
+</section>
+
+<!-- Results Section -->
+<section class="container hidden" id="resultsSection">
+<div class="quiz-container">
+<div class="card results-card">
+<h2 style="margin-bottom:20px">Quiz Completed!</h2>
+<div class="score-circle">
+<span class="score-value" id="scoreValue">0%</span>
+<span class="score-label">Score</span>
+</div>
+<div class="results-stats">
+<div class="stat-item"><div class="stat-value" id="correctCount">0</div><div class="stat-label">Correct</div></div>
+<div class="stat-item"><div class="stat-value" id="wrongCount">0</div><div class="stat-label">Wrong</div></div>
+<div class="stat-item"><div class="stat-value" id="skippedCount">0</div><div class="stat-label">Skipped</div></div>
+</div>
+<div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap">
+<button class="btn btn-primary" onclick="viewCorrection()">
+<i class="fas fa-eye"></i> View Corrections (6 pts)
+</button>
+<button class="btn btn-secondary" onclick="showSection('tests')">
+<i class="fas fa-arrow-left"></i> Back to Tests
+</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Correction Section -->
+<section class="container hidden" id="correctionSection">
+<div class="quiz-container">
+<div class="admin-header">
+<h2><i class="fas fa-check-circle"></i> Corrections & Explanations</h2>
+<button class="btn btn-secondary" onclick="showSection('tests')">
+<i class="fas fa-arrow-left"></i> Back to Tests
+</button>
+</div>
+<div id="correctionsList"></div>
+</div>
+</section>
+
+<!-- Leaderboard Section -->
+<section class="container hidden" id="leaderboardSection">
+<div class="leaderboard-container">
+<h2 style="margin-bottom:30px"><i class="fas fa-trophy"></i> Leaderboard</h2>
+<div class="leaderboard-tabs" id="leaderboardTabs"></div>
+<div class="search-box" style="margin-bottom:20px">
+<i class="fas fa-search"></i>
+<input type="text" id="lbSearch" placeholder="Search users..." oninput="filterLeaderboard()">
+</div>
+<div id="userHighlight"></div>
+<div id="leaderboardList"></div>
+</div>
+</section>
+</div>
+
+<!-- Admin Panel -->
+<div class="hidden" id="adminContainer">
+<button class="mobile-menu-btn" onclick="toggleAdminSidebar()" style="position:fixed;top:20px;left:20px;z-index:200">
+<i class="fas fa-bars"></i>
+</button>
+<aside class="admin-sidebar" id="adminSidebar">
+<div class="logo" style="margin-bottom:40px">
+<div class="logo-icon"><i class="fas fa-user-shield"></i></div>
+<span class="logo-text">Admin</span>
+</div>
+<nav>
+<div class="admin-nav-item active" data-section="users" onclick="showAdminSection('users')">
+<i class="fas fa-users"></i> Users
+</div>
+<div class="admin-nav-item" data-section="tests" onclick="showAdminSection('tests')">
+<i class="fas fa-book-open"></i> Tests
+</div>
+<div class="admin-nav-item" data-section="questions" onclick="showAdminSection('questions')">
+<i class="fas fa-question-circle"></i> Questions
+</div>
+<div class="admin-nav-item" data-section="leaderboard" onclick="showAdminSection('leaderboard')">
+<i class="fas fa-trophy"></i> Leaderboard
+</div>
+<div class="admin-nav-item" onclick="adminLogout()">
+<i class="fas fa-sign-out-alt"></i> Logout
+</div>
+</nav>
+</aside>
+<main class="admin-main">
+<!-- Users Management -->
+<section class="hidden" id="adminUsersSection">
+<div class="admin-header">
+<h2><i class="fas fa-users"></i> Users Management</h2>
+<button class="btn btn-primary" onclick="openModal('addUserModal')">
+<i class="fas fa-plus"></i> Add User
+</button>
+</div>
+<div class="card admin-card">
+<div class="search-box" style="margin-bottom:20px">
+<i class="fas fa-search"></i>
+<input type="text" id="adminUserSearch" placeholder="Search users..." oninput="filterAdminUsers()">
+</div>
+<div style="overflow-x:auto">
+<table class="admin-table" id="usersTable">
+<thead><tr><th>Name</th><th>Department</th><th>Access Code</th><th>Points</th><th>Actions</th></tr></thead>
+<tbody id="usersTableBody"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- Tests Management -->
+<section class="hidden" id="adminTestsSection">
+<div class="admin-header">
+<h2><i class="fas fa-book-open"></i> Tests Management</h2>
+<button class="btn btn-primary" onclick="openModal('addTestModal')">
+<i class="fas fa-plus"></i> Add Test
+</button>
+</div>
+<div class="card admin-card">
+<div style="overflow-x:auto">
+<table class="admin-table">
+<thead><tr><th>Test Name</th><th>Questions</th><th>Attempts</th><th>Actions</th></tr></thead>
+<tbody id="testsTableBody"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- Questions Management -->
+<section class="hidden" id="adminQuestionsSection">
+<div class="admin-header">
+<h2><i class="fas fa-question-circle"></i> Questions Management</h2>
+</div>
+<div class="card admin-card">
+<div class="input-group">
+<label>Select Test</label>
+<select id="questionTestSelect" onchange="loadTestQuestions()">
+<option value="">Select a test</option>
+</select>
+</div>
+<div class="file-upload" onclick="document.getElementById('jsonFileInput').click()">
+<i class="fas fa-cloud-upload-alt"></i>
+<p>Click to upload JSON file with questions</p>
+<input type="file" id="jsonFileInput" accept=".json" onchange="uploadQuestions(event)">
+</div>
+<div id="questionsList" style="margin-top:30px"></div>
+</div>
+<div class="card admin-card" style="margin-top:20px">
+<h3 style="color:#fff;margin-bottom:15px">JSON Format Example:</h3>
+<pre style="background:var(--glass);padding:20px;border-radius:12px;color:#fff;overflow-x:auto;font-size:13px">
+[
+  {
+    "question": "What is 2 + 2?",
+    "options": ["3", "4", "5", "6"],
+    "correct": 1,
+    "explanation": "2 + 2 equals 4"
+  }
+]</pre>
+</div>
+</section>
+
+<!-- Admin Leaderboard -->
+<section class="hidden" id="adminLeaderboardSection">
+<div class="admin-header">
+<h2><i class="fas fa-trophy"></i> Leaderboard Overview</h2>
+</div>
+<div class="leaderboard-tabs" id="adminLeaderboardTabs"></div>
+<div class="card admin-card" id="adminLeaderboardContent"></div>
+</section>
+</main>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal" id="addUserModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2><i class="fas fa-user-plus"></i> Add New User</h2>
+<button class="modal-close" onclick="closeModal('addUserModal')">×</button>
+</div>
+<div class="input-group">
+<label>Full Name</label>
+<input type="text" id="newUserName" placeholder="Enter full name">
+</div>
+<div class="input-group">
+<label>Department</label>
+<input type="text" id="newUserDept" placeholder="Enter department">
+</div>
+<div class="input-group">
+<label>Initial Points</label>
+<input type="number" id="newUserPoints" placeholder="Enter initial points" value="50">
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="addUser()">
+<i class="fas fa-plus"></i> Add User
+</button>
+</div>
+</div>
+
+<!-- Add Points Modal -->
+<div class="modal" id="addPointsModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2><i class="fas fa-coins"></i> Add Points</h2>
+<button class="modal-close" onclick="closeModal('addPointsModal')">×</button>
+</div>
+<p style="color:rgba(255,255,255,.7);margin-bottom:20px">Adding points for: <strong id="pointsUserName" style="color:#fff"></strong></p>
+<div class="input-group">
+<label>Points to Add</label>
+<input type="number" id="addPointsAmount" placeholder="Enter points">
+</div>
+<button class="btn btn-success" style="width:100%" onclick="confirmAddPoints()">
+<i class="fas fa-plus"></i> Add Points
+</button>
+</div>
+</div>
+
+<!-- Add Test Modal -->
+<div class="modal" id="addTestModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2><i class="fas fa-book"></i> Add New Test</h2>
+<button class="modal-close" onclick="closeModal('addTestModal')">×</button>
+</div>
+<div class="input-group">
+<label>Test Name</label>
+<input type="text" id="newTestName" placeholder="Enter test name">
+</div>
+<div class="input-group">
+<label>Time Limit (minutes)</label>
+<input type="number" id="newTestTime" placeholder="Enter time limit" value="30">
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="addTest()">
+<i class="fas fa-plus"></i> Create Test
+</button>
+</div>
+</div>
+
+<!-- Edit Test Modal -->
+<div class="modal" id="editTestModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2><i class="fas fa-edit"></i> Edit Test</h2>
+<button class="modal-close" onclick="closeModal('editTestModal')">×</button>
+</div>
+<input type="hidden" id="editTestId">
+<div class="input-group">
+<label>Test Name</label>
+<input type="text" id="editTestName" placeholder="Enter test name">
+</div>
+<div class="input-group">
+<label>Time Limit (minutes)</label>
+<input type="number" id="editTestTime" placeholder="Enter time limit">
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="updateTest()">
+<i class="fas fa-save"></i> Update Test
+</button>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+// Firebase Config - Replace with your config
+const firebaseConfig = {
+  apiKey: "AIzaSyCvM6vwsuPSacx92MOIrc2oDw6LZAMcvRs",
+  authDomain: "biggg-611d9.firebaseapp.com",
+  databaseURL: "https://biggg-611d9-default-rtdb.firebaseio.com",
+  projectId: "biggg-611d9",
+  storageBucket: "biggg-611d9.firebasestorage.app",
+  messagingSenderId: "281791078644",
+  appId: "1:281791078644:web:d6a1851c4b0274bbdd7ea1",
+  measurementId: "G-SE40TBC5Y6"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// State
+let currentUser = null;
+let currentTest = null;
+let currentQuestions = [];
+let userAnswers = {};
+let flaggedQuestions = new Set();
+let currentQuestionIndex = 0;
+let timerInterval = null;
+let timeRemaining = 0;
+let quizResults = null;
+let selectedUserForPoints = null;
+let allUsers = [];
+let allTests = [];
+
+// Background Animation
+function initBgAnimation() {
+  const bg = document.getElementById('bgAnimation');
+  for (let i = 0; i < 20; i++) {
+    const span = document.createElement('span');
+    span.style.left = Math.random() * 100 + '%';
+    span.style.animationDelay = Math.random() * 25 + 's';
+    span.style.width = span.style.height = Math.random() * 30 + 10 + 'px';
+    bg.appendChild(span);
+  }
+}
+initBgAnimation();
+
+function clearSearch(inputId) {
+  const input = document.getElementById(inputId);
+  input.value = '';
+  input.dispatchEvent(new Event('input'));
+  input.focus();
+}
+
+// Toast
+function showToast(msg, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>${msg}`;
+  document.getElementById('toastContainer').appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// Modal
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+// Access Verification
+function verifyAccess() {
+  const code = document.getElementById('accessCodeInput').value.trim();
+  if (!code) return showToast('Please enter access code', 'error');
+  
+  db.ref('users').orderByChild('accessCode').equalTo(code).once('value', snap => {
+    if (snap.exists()) {
+      const userId = Object.keys(snap.val())[0];
+      currentUser = { id: userId, ...snap.val()[userId] };
+      
+      // Listen for real-time updates
+      db.ref(`users/${userId}`).on('value', snap => {
+        if (snap.exists()) {
+          currentUser = { id: userId, ...snap.val() };
+          updateUserDisplay();
+        }
+      });
+      
+      closeModal('accessModal');
+      document.getElementById('appContainer').classList.remove('hidden');
+      updateUserDisplay();
+      showSection('tests');
+      showToast(`Welcome, ${currentUser.name}!`, 'success');
+    } else {
+      showToast('Invalid access code', 'error');
+    }
+  });
+}
+
+function updateUserDisplay() {
+  document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('userNameDisplay').textContent = currentUser.name;
+  document.getElementById('userDeptDisplay').textContent = currentUser.department;
+  document.getElementById('userPointsDisplay').textContent = currentUser.points || 0;
+}
+
+// Admin
+function showAdminLogin() {
+  closeModal('accessModal');
+  openModal('adminLoginModal');
+}
+
+function verifyAdmin() {
+  const code = document.getElementById('adminCodeInput').value.trim();
+  if (code === 'OFUJE673$1') {
+    closeModal('adminLoginModal');
+    document.getElementById('adminContainer').classList.remove('hidden');
+    document.getElementById('accessModal').classList.remove('active');
+    showAdminSection('users');
+    showToast('Welcome, Admin!', 'success');
+  } else {
+    showToast('Invalid admin code', 'error');
+  }
+}
+
+function adminLogout() {
+  document.getElementById('adminContainer').classList.add('hidden');
+  document.getElementById('accessModal').classList.add('active');
+  showToast('Logged out', 'info');
+}
+
+function toggleAdminSidebar() {
+  document.getElementById('adminSidebar').classList.toggle('active');
+}
+
+function showAdminSection(section) {
+  document.querySelectorAll('[id^="admin"][id$="Section"]').forEach(s => s.classList.add('hidden'));
+  document.getElementById(`admin${section.charAt(0).toUpperCase() + section.slice(1)}Section`).classList.remove('hidden');
+  document.querySelectorAll('.admin-nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelector(`.admin-nav-item[data-section="${section}"]`)?.classList.add('active');
+  
+  if (section === 'users') loadAdminUsers();
+  if (section === 'tests') loadAdminTests();
+  if (section === 'questions') loadTestsForQuestions();
+  if (section === 'leaderboard') loadAdminLeaderboard();
+}
+
+// User Management
+function loadAdminUsers() {
+  db.ref('users').on('value', snap => {
+    allUsers = [];
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '';
+    
+    if (!snap.exists()) return tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,.5)">No users found</td></tr>';
+    
+    snap.forEach(child => {
+      const user = { id: child.key, ...child.val() };
+      allUsers.push(user);
+      tbody.innerHTML += `
+        <tr data-name="${user.name.toLowerCase()}">
+          <td>${user.name}</td>
+          <td>${user.department}</td>
+          <td><code style="background:var(--glass);padding:5px 10px;border-radius:5px">${user.accessCode}</code></td>
+          <td><span class="points-badge"><i class="fas fa-coins"></i> ${user.points || 0}</span></td>
+          <td class="action-btns">
+            <button class="icon-btn add" onclick="openAddPoints('${child.key}','${user.name}')"><i class="fas fa-plus"></i></button>
+            <button class="icon-btn delete" onclick="deleteUser('${child.key}')"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`;
+    });
+  });
+}
+
+function filterAdminUsers() {
+  const search = document.getElementById('adminUserSearch').value.toLowerCase();
+  document.querySelectorAll('#usersTableBody tr').forEach(row => {
+    row.style.display = row.dataset.name?.includes(search) ? '' : 'none';
+  });
+}
+
+function generateAccessCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  return Array(8).fill().map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+function addUser() {
+  const name = document.getElementById('newUserName').value.trim();
+  const dept = document.getElementById('newUserDept').value.trim();
+  const points = parseInt(document.getElementById('newUserPoints').value) || 50;
+  
+  if (!name || !dept) return showToast('Please fill all fields', 'error');
+  
+  const accessCode = generateAccessCode();
+  db.ref('users').push({
+    name, department: dept, points, accessCode, createdAt: Date.now(), testAttempts: {}
+  }).then(() => {
+    showToast(`User created! Code: ${accessCode}`, 'success');
+    closeModal('addUserModal');
+    document.getElementById('newUserName').value = '';
+    document.getElementById('newUserDept').value = '';
+  });
+}
+
+function openAddPoints(userId, userName) {
+  selectedUserForPoints = userId;
+  document.getElementById('pointsUserName').textContent = userName;
+  document.getElementById('addPointsAmount').value = '';
+  openModal('addPointsModal');
+}
+
+function confirmAddPoints() {
+  const amount = parseInt(document.getElementById('addPointsAmount').value);
+  if (!amount || amount < 1) return showToast('Enter valid points', 'error');
+  
+  db.ref(`users/${selectedUserForPoints}/points`).once('value', snap => {
+    const current = snap.val() || 0;
+    db.ref(`users/${selectedUserForPoints}/points`).set(current + amount).then(() => {
+      showToast(`Added ${amount} points!`, 'success');
+      closeModal('addPointsModal');
+    });
+  });
+}
+
+function deleteUser(userId) {
+  if (!confirm('Delete this user?')) return;
+  db.ref(`users/${userId}`).remove().then(() => showToast('User deleted', 'success'));
+}
+
+// Tests Management
+function loadAdminTests() {
+  db.ref('tests').on('value', snap => {
+    allTests = [];
+    const tbody = document.getElementById('testsTableBody');
+    tbody.innerHTML = '';
+    
+    if (!snap.exists()) return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.5)">No tests found</td></tr>';
+    
+    snap.forEach(child => {
+      const test = { id: child.key, ...child.val() };
+      allTests.push(test);
+      const qCount = test.questions ? Object.keys(test.questions).length : 0;
+      tbody.innerHTML += `
+        <tr>
+          <td>${test.name}</td>
+          <td>${qCount} questions</td>
+          <td>${test.attempts || 0}</td>
+          <td class="action-btns">
+            <button class="icon-btn edit" onclick="openEditTest('${child.key}')"><i class="fas fa-edit"></i></button>
+            <button class="icon-btn delete" onclick="deleteTest('${child.key}')"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`;
+    });
+  });
+}
+
+function addTest() {
+  const name = document.getElementById('newTestName').value.trim();
+  const time = parseInt(document.getElementById('newTestTime').value) || 30;
+  
+  if (!name) return showToast('Enter test name', 'error');
+  
+  db.ref('tests').push({
+    name, timeLimit: time, attempts: 0, createdAt: Date.now()
+  }).then(() => {
+    showToast('Test created!', 'success');
+    closeModal('addTestModal');
+    document.getElementById('newTestName').value = '';
+  });
+}
+
+function openEditTest(testId) {
+  const test = allTests.find(t => t.id === testId);
+  if (!test) return;
+  
+  document.getElementById('editTestId').value = testId;
+  document.getElementById('editTestName').value = test.name;
+  document.getElementById('editTestTime').value = test.timeLimit;
+  openModal('editTestModal');
+}
+
+function updateTest() {
+  const id = document.getElementById('editTestId').value;
+  const name = document.getElementById('editTestName').value.trim();
+  const time = parseInt(document.getElementById('editTestTime').value);
+  
+  if (!name) return showToast('Enter test name', 'error');
+  
+  db.ref(`tests/${id}`).update({ name, timeLimit: time }).then(() => {
+    showToast('Test updated!', 'success');
+    closeModal('editTestModal');
+  });
+}
+
+function deleteTest(testId) {
+  if (!confirm('Delete this test?')) return;
+  db.ref(`tests/${testId}`).remove().then(() => showToast('Test deleted', 'success'));
+}
+
+// Questions Management
+function loadTestsForQuestions() {
+  const select = document.getElementById('questionTestSelect');
+  select.innerHTML = '<option value="">Select a test</option>';
+  
+  db.ref('tests').once('value', snap => {
+    snap.forEach(child => {
+      select.innerHTML += `<option value="${child.key}">${child.val().name}</option>`;
+    });
+  });
+}
+
+function loadTestQuestions() {
+  const testId = document.getElementById('questionTestSelect').value;
+  const list = document.getElementById('questionsList');
+  
+  if (!testId) return list.innerHTML = '';
+  
+  db.ref(`tests/${testId}/questions`).on('value', snap => {
+    list.innerHTML = '';
+    if (!snap.exists()) return list.innerHTML = '<p style="color:rgba(255,255,255,.5);text-align:center">No questions yet</p>';
+    
+    let i = 0;
+    snap.forEach(child => {
+      i++;
+      const q = child.val();
+      list.innerHTML += `
+        <div class="card" style="margin-bottom:15px;padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:start">
+            <div>
+              <strong style="color:var(--accent)">Q${i}:</strong>
+              <span style="color:#fff">${q.question}</span>
+            </div>
+            <button class="icon-btn delete" onclick="deleteQuestion('${testId}','${child.key}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>`;
+    });
+  });
+}
+
+function uploadQuestions(event) {
+  const file = event.target.files[0];
+  const testId = document.getElementById('questionTestSelect').value;
+  
+  if (!testId) return showToast('Select a test first', 'error');
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const questions = JSON.parse(e.target.result);
+      if (!Array.isArray(questions)) throw new Error('Invalid format');
+      
+      questions.forEach(q => {
+        if (!q.question || !q.options || q.correct === undefined) {
+          throw new Error('Invalid question format');
+        }
+        db.ref(`tests/${testId}/questions`).push(q);
+      });
+      
+      showToast(`${questions.length} questions uploaded!`, 'success');
+      event.target.value = '';
+    } catch (err) {
+      showToast('Invalid JSON format', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function deleteQuestion(testId, qId) {
+  if (!confirm('Delete this question?')) return;
+  db.ref(`tests/${testId}/questions/${qId}`).remove().then(() => showToast('Question deleted', 'success'));
+}
+
+// User Tests
+function showSection(section) {
+  document.querySelectorAll('#appContainer > section').forEach(s => s.classList.add('hidden'));
+  document.getElementById(`${section}Section`).classList.remove('hidden');
+  
+  if (section === 'tests') loadTests();
+  if (section === 'leaderboard') loadLeaderboard();
+}
+
+function loadTests() {
+  const grid = document.getElementById('testsGrid');
+  
+  db.ref('tests').on('value', snap => {
+    grid.innerHTML = '';
+    if (!snap.exists()) return grid.innerHTML = '<div class="card" style="text-align:center"><p style="color:rgba(255,255,255,.6)">No tests available</p></div>';
+    
+    snap.forEach(child => {
+      const test = { id: child.key, ...child.val() };
+      const qCount = test.questions ? Object.keys(test.questions).length : 0;
+      const userAttempts = currentUser.testAttempts?.[child.key] || 0;
+      const canTake = currentUser.points >= 4 && qCount > 0;
+      
+      grid.innerHTML += `
+        <div class="card test-card" data-name="${test.name.toLowerCase()}">
+          <div class="test-header">
+            <h3 class="test-title">${test.name}</h3>
+            <span class="test-badge">${test.timeLimit} min</span>
+          </div>
+          <div class="test-info">
+            <span><i class="fas fa-question-circle"></i> ${qCount} Questions</span>
+            <span><i class="fas fa-redo"></i> ${userAttempts} Attempts</span>
+            <span><i class="fas fa-users"></i> ${test.attempts || 0} Total</span>
+          </div>
+          <div class="test-actions">
+            <button class="btn btn-primary" ${canTake ? `onclick="startTest('${child.key}')"` : 'disabled style="opacity:.5"'}>
+              <i class="fas fa-play"></i> Start (4 pts)
+            </button>
+          </div>
+        </div>`;
+    });
+  });
+}
+
+function filterTests() {
+  const search = document.getElementById('testSearch').value.toLowerCase();
+  document.querySelectorAll('.test-card').forEach(card => {
+    card.style.display = card.dataset.name?.includes(search) ? '' : 'none';
+  });
+}
+
+function startTest(testId) {
+  if (currentUser.points < 4) return showToast('Insufficient points!', 'error');
+  
+  db.ref(`tests/${testId}`).once('value', snap => {
+    if (!snap.exists()) return showToast('Test not found', 'error');
+    
+    currentTest = { id: testId, ...snap.val() };
+    const questions = currentTest.questions;
+    
+    if (!questions || Object.keys(questions).length === 0) {
+      return showToast('No questions in this test', 'error');
+    }
+    
+    currentQuestions = Object.entries(questions).map(([id, q]) => ({ id, ...q }));
+    userAnswers = {};
+    flaggedQuestions.clear();
+    currentQuestionIndex = 0;
+    timeRemaining = currentTest.timeLimit * 60;
+    
+    // Deduct points
+    db.ref(`users/${currentUser.id}/points`).set(currentUser.points - 4);
+    
+    // Increment attempts
+    const attempts = (currentUser.testAttempts?.[testId] || 0) + 1;
+    db.ref(`users/${currentUser.id}/testAttempts/${testId}`).set(attempts);
+    db.ref(`tests/${testId}/attempts`).transaction(val => (val || 0) + 1);
+    
+    showSection('quiz');
+    renderQuiz();
+    startTimer();
+  });
+}
+
+function renderQuiz() {
+  document.getElementById('totalQ').textContent = currentQuestions.length;
+  renderQuestionNav();
+  renderQuestion();
+}
+
+function renderQuestionNav() {
+  const nav = document.getElementById('questionNav');
+  nav.innerHTML = currentQuestions.map((_, i) => {
+    let cls = 'q-nav-btn';
+    if (i === currentQuestionIndex) cls += ' current';
+    if (userAnswers[i] !== undefined) cls += ' answered';
+    if (flaggedQuestions.has(i)) cls += ' flagged';
+    return `<button class="${cls}" onclick="goToQuestion(${i})">${i + 1}</button>`;
+  }).join('');
+}
+
+function renderQuestion() {
+  const q = currentQuestions[currentQuestionIndex];
+  document.getElementById('currentQ').textContent = currentQuestionIndex + 1;
+  document.getElementById('qNum').textContent = currentQuestionIndex + 1;
+  document.getElementById('questionText').textContent = q.question;
+  document.getElementById('progressFill').style.width = ((currentQuestionIndex + 1) / currentQuestions.length * 100) + '%';
+  
+  const opts = document.getElementById('optionsList');
+  opts.innerHTML = q.options.map((opt, i) => `
+    <div class="option ${userAnswers[currentQuestionIndex] === i ? 'selected' : ''}" onclick="selectOption(${i})">
+      <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+      <span class="option-text">${opt}</span>
+    </div>
+  `).join('');
+  
+  document.getElementById('prevBtn').style.display = currentQuestionIndex === 0 ? 'none' : '';
+  document.getElementById('nextBtn').classList.toggle('hidden', currentQuestionIndex === currentQuestions.length - 1);
+  document.getElementById('submitBtn').classList.toggle('hidden', currentQuestionIndex !== currentQuestions.length - 1);
+  
+  renderQuestionNav();
+}
+
+function selectOption(i) {
+  userAnswers[currentQuestionIndex] = i;
+  renderQuestion();
+}
+
+function goToQuestion(i) { currentQuestionIndex = i; renderQuestion(); }
+function prevQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; renderQuestion(); } }
+function nextQuestion() { if (currentQuestionIndex < currentQuestions.length - 1) { currentQuestionIndex++; renderQuestion(); } }
+function flagQuestion() { flaggedQuestions.has(currentQuestionIndex) ? flaggedQuestions.delete(currentQuestionIndex) : flaggedQuestions.add(currentQuestionIndex); renderQuestionNav(); showToast('Question flagged', 'info'); }
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeRemaining--;
+    const mins = Math.floor(timeRemaining / 60);
+    const secs = timeRemaining % 60;
+    document.getElementById('timerDisplay').textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    
+    const timer = document.getElementById('quizTimer');
+    timer.classList.toggle('warning', timeRemaining <= 60 && timeRemaining > 30);
+    timer.classList.toggle('danger', timeRemaining <= 30);
+    
+    if (timeRemaining <= 0) submitQuiz();
+  }, 1000);
+}
+
+function submitQuiz() {
+  clearInterval(timerInterval);
+  
+  let correct = 0, wrong = 0, skipped = 0;
+  currentQuestions.forEach((q, i) => {
+    if (userAnswers[i] === undefined) skipped++;
+    else if (userAnswers[i] === q.correct) correct++;
+    else wrong++;
+  });
+  
+  const score = Math.round(correct / currentQuestions.length * 100);
+  quizResults = { correct, wrong, skipped, score };
+  
+  // Save to leaderboard
+  db.ref('leaderboard').push({
+    userId: currentUser.id,
+    userName: currentUser.name,
+    department: currentUser.department,
+    testId: currentTest.id,
+    testName: currentTest.name,
+    score,
+    correct,
+    total: currentQuestions.length,
+    timestamp: Date.now()
+  });
+  
+  showSection('results');
+  document.getElementById('scoreValue').textContent = score + '%';
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('skippedCount').textContent = skipped;
+}
+
+function viewCorrection() {
+  if (currentUser.points < 6) return showToast('Insufficient points! Need 6 points', 'error');
+  
+  db.ref(`users/${currentUser.id}/points`).set(currentUser.points - 6);
+  
+  const list = document.getElementById('correctionsList');
+  list.innerHTML = currentQuestions.map((q, i) => {
+    const userAns = userAnswers[i];
+    const isCorrect = userAns === q.correct;
+    const isSkipped = userAns === undefined;
+    
+    return `
+      <div class="card" style="margin-bottom:20px">
+        <p class="question-number">Question ${i + 1} ${isSkipped ? '<span style="color:var(--warning)">(Skipped)</span>' : isCorrect ? '<span style="color:var(--success)">(Correct)</span>' : '<span style="color:var(--danger)">(Wrong)</span>'}</p>
+        <p class="question-text" style="font-size:18px">${q.question}</p>
+        <div class="options-list">
+          ${q.options.map((opt, j) => `
+            <div class="option ${j === q.correct ? 'correct' : ''} ${j === userAns && j !== q.correct ? 'wrong' : ''}">
+              <span class="option-letter">${String.fromCharCode(65 + j)}</span>
+              <span class="option-text">${opt}</span>
+              ${j === q.correct ? '<i class="fas fa-check" style="margin-left:auto;color:var(--success)"></i>' : ''}
+              ${j === userAns && j !== q.correct ? '<i class="fas fa-times" style="margin-left:auto;color:var(--danger)"></i>' : ''}
+            </div>
+          `).join('')}
+        </div>
+        ${q.explanation ? `
+          <div class="explanation-box">
+            <h4><i class="fas fa-lightbulb"></i> Explanation</h4>
+            <p>${q.explanation}</p>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+  
+  showSection('correction');
+}
+
+// Leaderboard
+function loadLeaderboard() {
+  const tabs = document.getElementById('leaderboardTabs');
+  tabs.innerHTML = '<button class="tab-btn active" onclick="loadLeaderboardData(\'\')">Overall</button>';
+  
+  db.ref('tests').once('value', snap => {
+    snap.forEach(child => {
+      tabs.innerHTML += `<button class="tab-btn" onclick="loadLeaderboardData('${child.key}')">${child.val().name}</button>`;
+    });
+  });
+  
+  loadLeaderboardData('');
+}
+
+function loadLeaderboardData(testId) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  event?.target?.classList.add('active');
+  
+  const ref = testId ? db.ref('leaderboard').orderByChild('testId').equalTo(testId) : db.ref('leaderboard');
+  
+  ref.once('value', snap => {
+    const entries = [];
+    snap.forEach(child => entries.push(child.val()));
+    
+    // Aggregate by user
+    const userScores = {};
+    entries.forEach(e => {
+      if (!userScores[e.userId] || userScores[e.userId].score < e.score) {
+        userScores[e.userId] = e;
+      }
+    });
+    
+    const sorted = Object.values(userScores).sort((a, b) => b.score - a.score);
+    
+    // Find current user position
+    const userPos = sorted.findIndex(e => e.userId === currentUser.id);
+    const userHighlight = document.getElementById('userHighlight');
+    
+    if (userPos !== -1) {
+      const u = sorted[userPos];
+      userHighlight.innerHTML = `
+        <div class="leaderboard-item user-highlight">
+          <div class="rank rank-default">#${userPos + 1}</div>
+          <div class="user-avatar">${u.userName.charAt(0)}</div>
+          <div class="lb-user-info">
+            <div class="lb-name">${u.userName} (You)</div>
+            <div class="lb-dept">${u.department}</div>
+          </div>
+          <div class="lb-score">${u.score}%</div>
+        </div>`;
+    } else {
+      userHighlight.innerHTML = '';
+    }
+    
+    const list = document.getElementById('leaderboardList');
+    list.innerHTML = sorted.map((e, i) => `
+      <div class="leaderboard-item ${e.userId === currentUser.id ? 'user-highlight' : ''}" data-name="${e.userName.toLowerCase()}">
+        <div class="rank ${i < 3 ? 'rank-' + (i + 1) : 'rank-default'}">${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}</div>
+        <div class="user-avatar" style="background:${e.userId === currentUser.id ? 'var(--gradient)' : 'var(--glass)'}">${e.userName.charAt(0)}</div>
+        <div class="lb-user-info">
+          <div class="lb-name">${e.userName}${e.userId === currentUser.id ? ' (You)' : ''}</div>
+          <div class="lb-dept">${e.department}</div>
+        </div>
+        <div class="lb-score">${e.score}%</div>
+      </div>
+    `).join('');
+  });
+}
+
+function filterLeaderboard() {
+  const search = document.getElementById('lbSearch').value.toLowerCase();
+  document.querySelectorAll('#leaderboardList .leaderboard-item').forEach(item => {
+    item.style.display = item.dataset.name?.includes(search) ? '' : 'none';
+  });
+}
+
+// Admin Leaderboard
+function loadAdminLeaderboard() {
+  const tabs = document.getElementById('adminLeaderboardTabs');
+  tabs.innerHTML = '<button class="tab-btn active" onclick="loadAdminLeaderboardData(\'\')">Overall</button>';
+  
+  db.ref('tests').once('value', snap => {
+    snap.forEach(child => {
+      tabs.innerHTML += `<button class="tab-btn" onclick="loadAdminLeaderboardData('${child.key}')">${child.val().name}</button>`;
+    });
+  });
+  
+  loadAdminLeaderboardData('');
+}
+
+function loadAdminLeaderboardData(testId) {
+  document.querySelectorAll('#adminLeaderboardTabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+  event?.target?.classList.add('active');
+  
+  const ref = testId ? db.ref('leaderboard').orderByChild('testId').equalTo(testId) : db.ref('leaderboard');
+  const content = document.getElementById('adminLeaderboardContent');
+  
+  ref.once('value', snap => {
+    const entries = [];
+    snap.forEach(child => entries.push(child.val()));
+    
+    const userScores = {};
+    entries.forEach(e => {
+      if (!userScores[e.userId] || userScores[e.userId].score < e.score) {
+        userScores[e.userId] = e;
+      }
+    });
+    
+    const sorted = Object.values(userScores).sort((a, b) => b.score - a.score);
+    
+    content.innerHTML = `
+      <table class="admin-table">
+        <thead><tr><th>Rank</th><th>Name</th><th>Department</th><th>Score</th></tr></thead>
+        <tbody>
+          ${sorted.map((e, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${e.userName}</td>
+              <td>${e.department}</td>
+              <td><span class="points-badge">${e.score}%</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  });
+}
+
+// Logout
+function logout() {
+  db.ref(`users/${currentUser.id}`).off();
+  currentUser = null;
+  document.getElementById('appContainer').classList.add('hidden');
+  document.getElementById('accessModal').classList.add('active');
+  document.getElementById('accessCodeInput').value = '';
+  showToast('Logged out', 'info');
+}
+
+// Initialize
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('accessModal').classList.contains('active')) verifyAccess();
+    if (document.getElementById('adminLoginModal').classList.contains('active')) verifyAdmin();
+  }
+});
+</script>
+</body>
+</html>
