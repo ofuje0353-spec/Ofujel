@@ -53,6 +53,308 @@ color:#fff;font-size:15px;transition:all .3s ease}
 .input-group input:focus,.input-group select:focus,.input-group textarea:focus{
 outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.2)}
 /* ========== BEAUTIFUL SEARCH BOX ========== */
+/* ========== CONFIRMATION MODAL ========== */
+.confirm-modal {
+  max-width: 420px;
+  text-align: center;
+  padding: 40px 35px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.confirm-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient);
+}
+
+.confirm-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  position: relative;
+  animation: iconPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes iconPop {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.confirm-icon::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--gradient);
+  z-index: -1;
+  animation: iconGlow 2s ease-in-out infinite;
+}
+
+@keyframes iconGlow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.confirm-icon.start {
+  background: linear-gradient(135deg, #1e1b4b, #2d2a5e);
+  color: var(--success);
+}
+
+.confirm-icon.start::before {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.confirm-icon.submit {
+  background: linear-gradient(135deg, #1e1b4b, #2d2a5e);
+  color: var(--primary);
+}
+
+.confirm-icon.submit::before {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.confirm-icon.correction {
+  background: linear-gradient(135deg, #1e1b4b, #2d2a5e);
+  color: var(--accent);
+}
+
+.confirm-icon.correction::before {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.confirm-icon.warning {
+  background: linear-gradient(135deg, #1e1b4b, #2d2a5e);
+  color: var(--warning);
+}
+
+.confirm-icon.warning::before {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.confirm-icon.danger {
+  background: linear-gradient(135deg, #1e1b4b, #2d2a5e);
+  color: var(--danger);
+}
+
+.confirm-icon.danger::before {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.confirm-modal h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: #fff;
+  animation: fadeInUp 0.4s ease 0.1s both;
+}
+
+.confirm-modal > p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.4s ease 0.2s both;
+}
+
+.confirm-details {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  animation: fadeInUp 0.4s ease 0.3s both;
+}
+
+.confirm-details:empty {
+  display: none;
+}
+
+.confirm-details .detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.confirm-details .detail-item:last-child {
+  border-bottom: none;
+}
+
+.confirm-details .detail-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirm-details .detail-value {
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.confirm-details .detail-value.points {
+  color: var(--warning);
+}
+
+.confirm-details .detail-value.success {
+  color: var(--success);
+}
+
+.confirm-details .detail-value.accent {
+  color: var(--accent);
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  animation: fadeInUp 0.4s ease 0.4s both;
+}
+
+.confirm-actions .btn {
+  flex: 1;
+  max-width: 160px;
+  justify-content: center;
+}
+
+/* Confirm Button Variants */
+.confirm-actions .btn-confirm-start {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.confirm-actions .btn-confirm-submit {
+  background: var(--gradient);
+}
+
+.confirm-actions .btn-confirm-correction {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.confirm-actions .btn-confirm-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.confirm-actions .btn-confirm-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* Progress indicator for points deduction */
+.points-deduction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.points-before,
+.points-after {
+  text-align: center;
+}
+
+.points-before span,
+.points-after span {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4px;
+}
+
+.points-before strong {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.points-after strong {
+  font-size: 20px;
+  color: var(--success);
+}
+
+.points-arrow {
+  color: var(--accent);
+  font-size: 20px;
+  animation: arrowBounce 1s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
+}
+
+/* Cost Badge */
+.cost-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: var(--warning);
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.cost-badge i {
+  font-size: 16px;
+}
+
+/* Shake animation for insufficient points */
+@keyframes headShake {
+  0% { transform: translateX(0); }
+  6.5% { transform: translateX(-6px) rotateY(-9deg); }
+  18.5% { transform: translateX(5px) rotateY(7deg); }
+  31.5% { transform: translateX(-3px) rotateY(-5deg); }
+  43.5% { transform: translateX(2px) rotateY(3deg); }
+  50% { transform: translateX(0); }
+}
+
+.confirm-modal.shake {
+  animation: headShake 0.5s ease-in-out;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .confirm-modal {
+    padding: 30px 20px;
+    margin: 20px;
+  }
+  
+  .confirm-icon {
+    width: 70px;
+    height: 70px;
+    font-size: 28px;
+  }
+  
+  .confirm-modal h2 {
+    font-size: 20px;
+  }
+  
+  .confirm-actions {
+    flex-direction: column;
+  }
+  
+  .confirm-actions .btn {
+    max-width: 100%;
+  }
+}
+  
 .search-box {
   position: relative;
   max-width: 400px;
@@ -603,8 +905,8 @@ border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infin
 <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
 Next <i class="fas fa-arrow-right"></i>
 </button>
-<button class="btn btn-success hidden" id="submitBtn" onclick="submitQuiz()">
-<i class="fas fa-check"></i> Submit
+<button class="btn btn-success hidden" id="submitBtn" onclick="confirmSubmitQuiz()">
+  <i class="fas fa-check"></i> Submit
 </button>
 </div>
 </div>
@@ -625,8 +927,8 @@ Next <i class="fas fa-arrow-right"></i>
 <div class="stat-item"><div class="stat-value" id="skippedCount">0</div><div class="stat-label">Skipped</div></div>
 </div>
 <div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap">
-<button class="btn btn-primary" onclick="viewCorrection()">
-<i class="fas fa-eye"></i> View Corrections (6 pts)
+<button class="btn btn-primary" onclick="confirmViewCorrection()">
+  <i class="fas fa-eye"></i> View Corrections (6 pts)
 </button>
 <button class="btn btn-secondary" onclick="showSection('tests')">
 <i class="fas fa-arrow-left"></i> Back to Tests
@@ -861,6 +1163,26 @@ Next <i class="fas fa-arrow-right"></i>
 <i class="fas fa-save"></i> Update Test
 </button>
 </div>
+</div>
+
+  <!-- Confirmation Modal -->
+<div class="modal" id="confirmModal">
+  <div class="modal-content confirm-modal">
+    <div class="confirm-icon" id="confirmIcon">
+      <i class="fas fa-question"></i>
+    </div>
+    <h2 id="confirmTitle">Confirm Action</h2>
+    <p id="confirmMessage">Are you sure you want to proceed?</p>
+    <div class="confirm-details" id="confirmDetails"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" onclick="closeConfirmModal()">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button class="btn btn-primary" id="confirmBtn" onclick="executeConfirmAction()">
+        <i class="fas fa-check"></i> Confirm
+      </button>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -1265,7 +1587,7 @@ function loadTests() {
             <span><i class="fas fa-users"></i> ${test.attempts || 0} Total</span>
           </div>
           <div class="test-actions">
-            <button class="btn btn-primary" ${canTake ? `onclick="startTest('${child.key}')"` : 'disabled style="opacity:.5"'}>
+            <button class="btn btn-primary" onclick="confirmStartTest('${child.key}')" ${qCount === 0 ? 'disabled style="opacity:.5"' : ''}>
               <i class="fas fa-play"></i> Start (4 pts)
             </button>
           </div>
@@ -1575,6 +1897,378 @@ function loadAdminLeaderboardData(testId) {
         </tbody>
       </table>`;
   });
+}
+
+  // ========== CONFIRMATION SYSTEM ==========
+let confirmCallback = null;
+let confirmData = null;
+
+const confirmConfigs = {
+  startTest: {
+    icon: 'fa-play-circle',
+    iconClass: 'start',
+    title: 'Start Test?',
+    btnText: '<i class="fas fa-play"></i> Start Test',
+    btnClass: 'btn-confirm-start'
+  },
+  submitTest: {
+    icon: 'fa-paper-plane',
+    iconClass: 'submit',
+    title: 'Submit Test?',
+    btnText: '<i class="fas fa-check"></i> Submit',
+    btnClass: 'btn-confirm-submit'
+  },
+  viewCorrection: {
+    icon: 'fa-eye',
+    iconClass: 'correction',
+    title: 'View Corrections?',
+    btnText: '<i class="fas fa-eye"></i> View Corrections',
+    btnClass: 'btn-confirm-correction'
+  },
+  warning: {
+    icon: 'fa-exclamation-triangle',
+    iconClass: 'warning',
+    title: 'Warning',
+    btnText: '<i class="fas fa-check"></i> Proceed',
+    btnClass: 'btn-confirm-warning'
+  },
+  danger: {
+    icon: 'fa-trash-alt',
+    iconClass: 'danger',
+    title: 'Delete?',
+    btnText: '<i class="fas fa-trash"></i> Delete',
+    btnClass: 'btn-confirm-danger'
+  }
+};
+
+function showConfirm(type, message, details, callback, data = null) {
+  const config = confirmConfigs[type] || confirmConfigs.warning;
+  
+  document.getElementById('confirmIcon').className = `confirm-icon ${config.iconClass}`;
+  document.getElementById('confirmIcon').innerHTML = `<i class="fas ${config.icon}"></i>`;
+  document.getElementById('confirmTitle').textContent = config.title;
+  document.getElementById('confirmMessage').textContent = message;
+  document.getElementById('confirmDetails').innerHTML = details || '';
+  
+  const confirmBtn = document.getElementById('confirmBtn');
+  confirmBtn.className = `btn ${config.btnClass}`;
+  confirmBtn.innerHTML = config.btnText;
+  
+  confirmCallback = callback;
+  confirmData = data;
+  
+  openModal('confirmModal');
+}
+
+function closeConfirmModal() {
+  closeModal('confirmModal');
+  confirmCallback = null;
+  confirmData = null;
+}
+
+function executeConfirmAction() {
+  if (confirmCallback) {
+    confirmCallback(confirmData);
+  }
+  closeConfirmModal();
+}
+
+// ========== START TEST CONFIRMATION ==========
+function confirmStartTest(testId) {
+  db.ref(`tests/${testId}`).once('value', snap => {
+    if (!snap.exists()) return showToast('Test not found', 'error');
+    
+    const test = { id: testId, ...snap.val() };
+    const qCount = test.questions ? Object.keys(test.questions).length : 0;
+    
+    if (qCount === 0) {
+      return showToast('No questions in this test', 'error');
+    }
+    
+    if (currentUser.points < 4) {
+      showConfirm('warning', 
+        'You don\'t have enough points to take this test.',
+        `
+          <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-coins"></i> Your Points</span>
+            <span class="detail-value points">${currentUser.points}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-tag"></i> Required</span>
+            <span class="detail-value">4 points</span>
+          </div>
+          <div style="text-align:center;margin-top:15px;color:rgba(255,255,255,0.6);font-size:13px;">
+            <i class="fas fa-info-circle"></i> Contact admin to add more points
+          </div>
+        `,
+        () => {}
+      );
+      document.querySelector('.confirm-modal').classList.add('shake');
+      setTimeout(() => document.querySelector('.confirm-modal').classList.remove('shake'), 500);
+      document.getElementById('confirmBtn').style.display = 'none';
+      return;
+    }
+    
+    const pointsAfter = currentUser.points - 4;
+    
+    showConfirm('startTest',
+      `You are about to start "${test.name}". Make sure you're ready!`,
+      `
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-book"></i> Test Name</span>
+          <span class="detail-value accent">${test.name}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-question-circle"></i> Questions</span>
+          <span class="detail-value">${qCount} questions</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-clock"></i> Time Limit</span>
+          <span class="detail-value">${test.timeLimit} minutes</span>
+        </div>
+        <div class="points-deduction">
+          <div class="points-before">
+            <span>Current</span>
+            <strong>${currentUser.points} pts</strong>
+          </div>
+          <div class="points-arrow"><i class="fas fa-arrow-right"></i></div>
+          <div class="points-after">
+            <span>After</span>
+            <strong>${pointsAfter} pts</strong>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div class="cost-badge">
+            <i class="fas fa-coins"></i> 4 points will be deducted
+          </div>
+        </div>
+      `,
+      (testId) => startTestConfirmed(testId),
+      testId
+    );
+    document.getElementById('confirmBtn').style.display = '';
+  });
+}
+
+function startTestConfirmed(testId) {
+  db.ref(`tests/${testId}`).once('value', snap => {
+    if (!snap.exists()) return showToast('Test not found', 'error');
+    
+    currentTest = { id: testId, ...snap.val() };
+    const questions = currentTest.questions;
+    
+    if (!questions || Object.keys(questions).length === 0) {
+      return showToast('No questions in this test', 'error');
+    }
+    
+    currentQuestions = Object.entries(questions).map(([id, q]) => ({ id, ...q }));
+    userAnswers = {};
+    flaggedQuestions.clear();
+    currentQuestionIndex = 0;
+    timeRemaining = currentTest.timeLimit * 60;
+    
+    // Deduct points
+    db.ref(`users/${currentUser.id}/points`).set(currentUser.points - 4);
+    
+    // Increment attempts
+    const attempts = (currentUser.testAttempts?.[testId] || 0) + 1;
+    db.ref(`users/${currentUser.id}/testAttempts/${testId}`).set(attempts);
+    db.ref(`tests/${testId}/attempts`).transaction(val => (val || 0) + 1);
+    
+    showSection('quiz');
+    renderQuiz();
+    startTimer();
+    showToast('Test started! Good luck! 🍀', 'success');
+  });
+}
+
+// ========== SUBMIT TEST CONFIRMATION ==========
+function confirmSubmitQuiz() {
+  const answered = Object.keys(userAnswers).length;
+  const total = currentQuestions.length;
+  const unanswered = total - answered;
+  const flagged = flaggedQuestions.size;
+  
+  const mins = Math.floor(timeRemaining / 60);
+  const secs = timeRemaining % 60;
+  const timeLeft = `${mins}:${secs.toString().padStart(2, '0')}`;
+  
+  let warningMsg = '';
+  if (unanswered > 0) {
+    warningMsg = `
+      <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px;margin-bottom:15px;">
+        <p style="color:var(--warning);font-size:13px;margin:0;">
+          <i class="fas fa-exclamation-triangle"></i> 
+          You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}!
+        </p>
+      </div>
+    `;
+  }
+  
+  showConfirm('submitTest',
+    'Are you sure you want to submit your test? This action cannot be undone.',
+    `
+      ${warningMsg}
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-check-circle"></i> Answered</span>
+        <span class="detail-value success">${answered} / ${total}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-times-circle"></i> Unanswered</span>
+        <span class="detail-value" style="color:${unanswered > 0 ? 'var(--warning)' : 'var(--success)'}">${unanswered}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-flag"></i> Flagged</span>
+        <span class="detail-value" style="color:${flagged > 0 ? 'var(--warning)' : 'rgba(255,255,255,0.6)'}">${flagged}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-clock"></i> Time Left</span>
+        <span class="detail-value accent">${timeLeft}</span>
+      </div>
+    `,
+    () => submitQuizConfirmed()
+  );
+}
+
+function submitQuizConfirmed() {
+  clearInterval(timerInterval);
+  
+  let correct = 0, wrong = 0, skipped = 0;
+  currentQuestions.forEach((q, i) => {
+    if (userAnswers[i] === undefined) skipped++;
+    else if (userAnswers[i] === q.correct) correct++;
+    else wrong++;
+  });
+  
+  const score = Math.round(correct / currentQuestions.length * 100);
+  quizResults = { correct, wrong, skipped, score };
+  
+  // Save to leaderboard
+  db.ref('leaderboard').push({
+    userId: currentUser.id,
+    userName: currentUser.name,
+    department: currentUser.department,
+    testId: currentTest.id,
+    testName: currentTest.name,
+    score,
+    correct,
+    total: currentQuestions.length,
+    timestamp: Date.now()
+  });
+  
+  showSection('results');
+  document.getElementById('scoreValue').textContent = score + '%';
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('skippedCount').textContent = skipped;
+  
+  showToast('Test submitted successfully! 🎉', 'success');
+}
+
+// ========== VIEW CORRECTION CONFIRMATION ==========
+function confirmViewCorrection() {
+  if (currentUser.points < 6) {
+    showConfirm('warning',
+      'You don\'t have enough points to view corrections.',
+      `
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-coins"></i> Your Points</span>
+          <span class="detail-value points">${currentUser.points}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-tag"></i> Required</span>
+          <span class="detail-value">6 points</span>
+        </div>
+        <div style="text-align:center;margin-top:15px;color:rgba(255,255,255,0.6);font-size:13px;">
+          <i class="fas fa-info-circle"></i> Contact admin to add more points
+        </div>
+      `,
+      () => {}
+    );
+    document.querySelector('.confirm-modal').classList.add('shake');
+    setTimeout(() => document.querySelector('.confirm-modal').classList.remove('shake'), 500);
+    document.getElementById('confirmBtn').style.display = 'none';
+    return;
+  }
+  
+  const pointsAfter = currentUser.points - 6;
+  
+  showConfirm('viewCorrection',
+    'View detailed corrections and explanations for all questions?',
+    `
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-book-open"></i> Test</span>
+        <span class="detail-value accent">${currentTest.name}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-check-circle"></i> Your Score</span>
+        <span class="detail-value success">${quizResults.score}%</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-list"></i> Questions</span>
+        <span class="detail-value">${currentQuestions.length} with explanations</span>
+      </div>
+      <div class="points-deduction">
+        <div class="points-before">
+          <span>Current</span>
+          <strong>${currentUser.points} pts</strong>
+        </div>
+        <div class="points-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="points-after">
+          <span>After</span>
+          <strong>${pointsAfter} pts</strong>
+        </div>
+      </div>
+      <div style="text-align:center">
+        <div class="cost-badge">
+          <i class="fas fa-coins"></i> 6 points will be deducted
+        </div>
+      </div>
+    `,
+    () => viewCorrectionConfirmed()
+  );
+  document.getElementById('confirmBtn').style.display = '';
+}
+
+function viewCorrectionConfirmed() {
+  db.ref(`users/${currentUser.id}/points`).set(currentUser.points - 6);
+  
+  const list = document.getElementById('correctionsList');
+  list.innerHTML = currentQuestions.map((q, i) => {
+    const userAns = userAnswers[i];
+    const isCorrect = userAns === q.correct;
+    const isSkipped = userAns === undefined;
+    
+    return `
+      <div class="card" style="margin-bottom:20px">
+        <p class="question-number">Question ${i + 1} 
+          ${isSkipped ? '<span style="color:var(--warning)">(Skipped)</span>' : 
+            isCorrect ? '<span style="color:var(--success)">(Correct ✓)</span>' : 
+            '<span style="color:var(--danger)">(Wrong ✗)</span>'}
+        </p>
+        <p class="question-text" style="font-size:18px">${q.question}</p>
+        <div class="options-list">
+          ${q.options.map((opt, j) => `
+            <div class="option ${j === q.correct ? 'correct' : ''} ${j === userAns && j !== q.correct ? 'wrong' : ''}">
+              <span class="option-letter">${String.fromCharCode(65 + j)}</span>
+              <span class="option-text">${opt}</span>
+              ${j === q.correct ? '<i class="fas fa-check" style="margin-left:auto;color:var(--success)"></i>' : ''}
+              ${j === userAns && j !== q.correct ? '<i class="fas fa-times" style="margin-left:auto;color:var(--danger)"></i>' : ''}
+            </div>
+          `).join('')}
+        </div>
+        ${q.explanation ? `
+          <div class="explanation-box">
+            <h4><i class="fas fa-lightbulb"></i> Explanation</h4>
+            <p>${q.explanation}</p>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+  
+  showSection('correction');
+  showToast('Corrections loaded! 📚', 'success');
 }
 
 // Logout
