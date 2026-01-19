@@ -1077,29 +1077,42 @@ Next <i class="fas fa-arrow-right"></i>
 </section>
 
 <!-- Tests Management -->
+<!-- Tests Management Section -->
 <section class="hidden" id="adminTestsSection">
-<div class="admin-header">
-<h2><i class="fas fa-book-open"></i> Tests Management</h2>
-<button class="btn btn-primary" onclick="openModal('addTestModal')">
-<i class="fas fa-plus"></i> Add Test
-</button>
-</div>
-<div class="card admin-card">
-<div style="overflow-x:auto">
-<table class="admin-table">
-  <thead>
-    <tr>
-      <th>Test Name</th>
-      <th>Questions</th>
-      <th>Attempts</th>
-      <th>Status</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody id="testsTableBody"></tbody>
-</table>
-</div>
-</div>
+  <div class="admin-header">
+    <h2><i class="fas fa-book-open"></i> Tests Management</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-success" onclick="bulkToggleTests(true)">
+        <i class="fas fa-eye"></i> Enable All
+      </button>
+      <button class="btn btn-warning" onclick="bulkToggleTests(false)">
+        <i class="fas fa-eye-slash"></i> Disable All
+      </button>
+      <button class="btn btn-primary" onclick="openModal('addTestModal')">
+        <i class="fas fa-plus"></i> Add Test
+      </button>
+    </div>
+  </div>
+  <div class="card admin-card">
+    <div class="search-box" style="margin-bottom:20px;max-width:300px">
+      <i class="fas fa-search"></i>
+      <input type="text" id="adminTestSearch" placeholder="Search tests..." oninput="filterAdminTests()">
+    </div>
+    <div style="overflow-x:auto">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Test Name</th>
+            <th>Questions</th>
+            <th>Attempts</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="testsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
 </section>
 
 <!-- Questions Management -->
@@ -1486,37 +1499,78 @@ function deleteUser(userId) {
 }
 
 // Tests Management
-function loadAdminTests(){
-  db.ref('tests').on('value',snap=>{
-    allTests=[];
-    const tbody=document.getElementById('testsTableBody');
-    tbody.innerHTML='';
-    if(!snap.exists())return tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,.5);padding:40px">No tests found</td></tr>';
-    snap.forEach(child=>{
-      const test={id:child.key,...child.val()};
-      allTests.push(test);
-      const qCount=test.questions?Object.keys(test.questions).length:0;
-      const isEnabled=test.enabled!==false;
-      tbody.innerHTML+=`
+function loadAdminTests() {
+  db.ref('tests').on('value', snap => {
+    allTests = [];
+    const tbody = document.getElementById('testsTableBody');
+    tbody.innerHTML = '';
+    
+    if (!snap.exists()) {
+      tbody.innerHTML = `
         <tr>
-          <td>${test.name}</td>
-          <td>${qCount} questions</td>
-          <td>${test.attempts||0}</td>
+          <td colspan="5" style="text-align:center;padding:60px;color:rgba(255,255,255,.5)">
+            <i class="fas fa-book-open" style="font-size:48px;display:block;margin-bottom:20px;opacity:0.3"></i>
+            No tests found. Create your first test!
+          </td>
+        </tr>`;
+      return;
+    }
+    
+    snap.forEach(child => {
+      const test = { id: child.key, ...child.val() };
+      allTests.push(test);
+      
+      const qCount = test.questions ? Object.keys(test.questions).length : 0;
+      const isEnabled = test.enabled !== false;
+      
+      tbody.innerHTML += `
+        <tr data-id="${child.key}">
+          <td>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:40px;height:40px;background:${isEnabled ? 'var(--gradient)' : 'var(--glass)'};border-radius:10px;display:flex;align-items:center;justify-content:center">
+                <i class="fas fa-book" style="color:#fff"></i>
+              </div>
+              <div>
+                <strong style="color:#fff">${test.name}</strong>
+                <small style="display:block;color:rgba(255,255,255,0.5);font-size:11px">${test.timeLimit} minutes</small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span style="background:var(--glass);padding:6px 14px;border-radius:20px;font-size:13px">
+              <i class="fas fa-question-circle" style="margin-right:5px;opacity:0.6"></i>
+              ${qCount}
+            </span>
+          </td>
+          <td>
+            <span style="color:var(--accent);font-weight:600">${test.attempts || 0}</span>
+            <span style="color:rgba(255,255,255,0.5);font-size:12px;margin-left:5px">attempts</span>
+          </td>
           <td>
             <div class="toggle-wrapper">
               <label class="toggle-switch">
-                <input type="checkbox" ${isEnabled?'checked':''} onchange="toggleTestStatus('${child.key}',this.checked)">
+                <input type="checkbox" ${isEnabled ? 'checked' : ''} onchange="toggleTestStatus('${child.key}', this.checked)">
                 <span class="toggle-slider"></span>
               </label>
-              <span class="toggle-label ${isEnabled?'enabled':'disabled'}">${isEnabled?'Active':'Disabled'}</span>
+              <span class="toggle-label ${isEnabled ? 'enabled' : 'disabled'}">
+                ${isEnabled ? 'Active' : 'Disabled'}
+              </span>
             </div>
           </td>
-          <td class="action-btns">
-            <button class="icon-btn ${isEnabled?'toggle-on':'toggle-off'}" onclick="confirmToggleTest('${child.key}',${!isEnabled})" title="${isEnabled?'Disable':'Enable'}">
-              <i class="fas ${isEnabled?'fa-eye':'fa-eye-slash'}"></i>
-            </button>
-            <button class="icon-btn edit" onclick="openEditTest('${child.key}')"><i class="fas fa-edit"></i></button>
-            <button class="icon-btn delete" onclick="confirmDeleteTest('${child.key}')"><i class="fas fa-trash"></i></button>
+          <td>
+            <div class="action-btns">
+              <button class="icon-btn ${isEnabled ? 'toggle-on' : 'toggle-off'}" 
+                      onclick="confirmToggleTest('${child.key}', ${!isEnabled})" 
+                      title="${isEnabled ? 'Disable Test' : 'Enable Test'}">
+                <i class="fas ${isEnabled ? 'fa-eye' : 'fa-eye-slash'}"></i>
+              </button>
+              <button class="icon-btn edit" onclick="openEditTest('${child.key}')" title="Edit Test">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="icon-btn delete" onclick="confirmDeleteTest('${child.key}')" title="Delete Test">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
           </td>
         </tr>`;
     });
@@ -1649,36 +1703,95 @@ function showSection(section) {
   if (section === 'leaderboard') loadLeaderboard();
 }
 
-function loadTests(){
-  const grid=document.getElementById('testsGrid');
-  db.ref('tests').on('value',snap=>{
-    grid.innerHTML='';
-    if(!snap.exists())return grid.innerHTML='<div class="card" style="text-align:center"><p style="color:rgba(255,255,255,.6)">No tests available</p></div>';
-    snap.forEach(child=>{
-      const test={id:child.key,...child.val()};
-      const qCount=test.questions?Object.keys(test.questions).length:0;
-      const userAttempts=currentUser.testAttempts?.[child.key]||0;
-      const isEnabled=test.enabled!==false;
-      const canTake=currentUser.points>=4&&qCount>0&&isEnabled;
-      grid.innerHTML+=`
-        <div class="card test-card ${!isEnabled?'disabled-test':''}" data-name="${test.name.toLowerCase()}">
-          ${!isEnabled?`<div class="test-disabled-overlay"><div class="test-disabled-badge"><i class="fas fa-lock"></i>Unavailable</div></div>`:''}
+function loadTests() {
+  const grid = document.getElementById('testsGrid');
+  
+  db.ref('tests').on('value', snap => {
+    grid.innerHTML = '';
+    
+    if (!snap.exists()) {
+      grid.innerHTML = `
+        <div class="card" style="text-align:center;grid-column:1/-1;padding:60px">
+          <i class="fas fa-book-open" style="font-size:64px;color:rgba(255,255,255,0.15);margin-bottom:20px;display:block"></i>
+          <h3 style="color:rgba(255,255,255,0.6);margin-bottom:10px">No Tests Available</h3>
+          <p style="color:rgba(255,255,255,.4);font-size:14px">Please check back later!</p>
+        </div>`;
+      return;
+    }
+    
+    let activeTestCount = 0;
+    
+    snap.forEach(child => {
+      const test = { id: child.key, ...child.val() };
+      const qCount = test.questions ? Object.keys(test.questions).length : 0;
+      const userAttempts = currentUser.testAttempts?.[child.key] || 0;
+      const isEnabled = test.enabled !== false;
+      const hasEnoughPoints = currentUser.points >= 4;
+      const hasQuestions = qCount > 0;
+      const canTake = hasEnoughPoints && hasQuestions && isEnabled;
+      
+      if (isEnabled) activeTestCount++;
+      
+      let buttonHtml = '';
+      let disabledReason = '';
+      
+      if (!isEnabled) {
+        buttonHtml = `
+          <button class="btn btn-secondary" disabled style="opacity:.5;cursor:not-allowed">
+            <i class="fas fa-lock"></i> Unavailable
+          </button>`;
+      } else if (!hasQuestions) {
+        buttonHtml = `
+          <button class="btn btn-primary" disabled style="opacity:.5;cursor:not-allowed">
+            <i class="fas fa-play"></i> Start (4 pts)
+          </button>`;
+        disabledReason = '<span style="color:var(--warning);font-size:11px;display:block;margin-top:8px"><i class="fas fa-exclamation-circle"></i> No questions yet</span>';
+      } else if (!hasEnoughPoints) {
+        buttonHtml = `
+          <button class="btn btn-primary" disabled style="opacity:.5;cursor:not-allowed">
+            <i class="fas fa-play"></i> Start (4 pts)
+          </button>`;
+        disabledReason = '<span style="color:var(--warning);font-size:11px;display:block;margin-top:8px"><i class="fas fa-coins"></i> Insufficient points</span>';
+      } else {
+        buttonHtml = `
+          <button class="btn btn-primary" onclick="confirmStartTest('${child.key}')">
+            <i class="fas fa-play"></i> Start (4 pts)
+          </button>`;
+      }
+      
+      grid.innerHTML += `
+        <div class="card test-card ${!isEnabled ? 'disabled-test' : ''}" data-name="${test.name.toLowerCase()}">
+          ${!isEnabled ? `
+            <div class="test-disabled-overlay">
+              <div class="test-disabled-badge">
+                <i class="fas fa-lock"></i>
+                Test Unavailable
+              </div>
+            </div>
+          ` : ''}
           <div class="test-header">
             <h3 class="test-title">${test.name}</h3>
-            <span class="test-badge">${test.timeLimit} min</span>
+            <span class="test-badge" ${!isEnabled ? 'style="background:var(--danger)"' : ''}>${test.timeLimit} min</span>
           </div>
           <div class="test-info">
             <span><i class="fas fa-question-circle"></i> ${qCount} Questions</span>
             <span><i class="fas fa-redo"></i> ${userAttempts} Attempts</span>
-            <span><i class="fas fa-users"></i> ${test.attempts||0} Total</span>
+            <span><i class="fas fa-users"></i> ${test.attempts || 0} Total</span>
           </div>
           <div class="test-actions">
-            <button class="btn btn-primary" ${canTake?`onclick="confirmStartTest('${child.key}')"`:'disabled style="opacity:.5"'}>
-              <i class="fas fa-${isEnabled?'play':'lock'}"></i> ${isEnabled?'Start (4 pts)':'Unavailable'}
-            </button>
+            ${buttonHtml}
+            ${disabledReason}
           </div>
         </div>`;
     });
+    
+    if (activeTestCount === 0 && snap.exists()) {
+      grid.innerHTML += `
+        <div class="card" style="text-align:center;grid-column:1/-1;padding:40px;border:2px dashed rgba(255,255,255,0.1)">
+          <i class="fas fa-pause-circle" style="font-size:48px;color:rgba(255,255,255,0.2);margin-bottom:15px;display:block"></i>
+          <p style="color:rgba(255,255,255,.5);margin:0">All tests are currently disabled by the administrator.</p>
+        </div>`;
+    }
   });
 }
 
@@ -2365,6 +2478,84 @@ function confirmStartTest(testId) {
   });
 }
     
+    // Check if user has enough points
+    if (currentUser.points < 4) {
+      showConfirm('warning', 
+        'You don\'t have enough points to take this test.',
+        `
+          <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-coins"></i> Your Points</span>
+            <span class="detail-value points">${currentUser.points}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-tag"></i> Required</span>
+            <span class="detail-value">4 points</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-minus-circle"></i> Shortage</span>
+            <span class="detail-value" style="color:var(--danger)">${4 - currentUser.points} points</span>
+          </div>
+          <div style="text-align:center;margin-top:20px;padding:15px;background:rgba(245,158,11,0.1);border-radius:12px;border:1px solid rgba(245,158,11,0.2)">
+            <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0">
+              <i class="fas fa-info-circle"></i> Contact administrator to add more points to your account.
+            </p>
+          </div>
+        `,
+        () => {}
+      );
+      document.querySelector('.confirm-modal').classList.add('shake');
+      setTimeout(() => document.querySelector('.confirm-modal').classList.remove('shake'), 500);
+      document.getElementById('confirmBtn').style.display = 'none';
+      return;
+    }
+    
+    // All checks passed - show start confirmation
+    const pointsAfter = currentUser.points - 4;
+    
+    showConfirm('startTest',
+      `You are about to start "${test.name}". Make sure you're ready!`,
+      `
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-book"></i> Test Name</span>
+          <span class="detail-value accent">${test.name}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-question-circle"></i> Questions</span>
+          <span class="detail-value">${qCount} questions</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-clock"></i> Time Limit</span>
+          <span class="detail-value">${test.timeLimit} minutes</span>
+        </div>
+        <div class="points-deduction">
+          <div class="points-before">
+            <span>Current</span>
+            <strong>${currentUser.points} pts</strong>
+          </div>
+          <div class="points-arrow"><i class="fas fa-arrow-right"></i></div>
+          <div class="points-after">
+            <span>After</span>
+            <strong>${pointsAfter} pts</strong>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div class="cost-badge">
+            <i class="fas fa-coins"></i> 4 points will be deducted
+          </div>
+        </div>
+        <div style="margin-top:20px;padding:15px;background:rgba(99,102,241,0.1);border-radius:12px;border:1px solid rgba(99,102,241,0.2)">
+          <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0">
+            <i class="fas fa-info-circle"></i> Once you start, the timer will begin. Make sure you have a stable connection and enough time to complete the test.
+          </p>
+        </div>
+      `,
+      (testId) => startTestConfirmed(testId),
+      testId
+    );
+    document.getElementById('confirmBtn').style.display = '';
+  });
+}
+    
     const pointsAfter = currentUser.points - 4;
     
     showConfirm('startTest',
@@ -2628,38 +2819,122 @@ function viewCorrectionConfirmed() {
 }
 
 // Toggle test status
-function toggleTestStatus(testId,enabled){
-  db.ref(`tests/${testId}/enabled`).set(enabled).then(()=>{
-    showToast(enabled?'Test enabled!':'Test disabled!',enabled?'success':'warning');
-  });
+// ========== TOGGLE TEST STATUS ==========
+function toggleTestStatus(testId, enabled) {
+  db.ref(`tests/${testId}/enabled`).set(enabled)
+    .then(() => {
+      showToast(
+        enabled ? 'Test enabled successfully!' : 'Test disabled successfully!',
+        enabled ? 'success' : 'warning'
+      );
+    })
+    .catch(err => {
+      showToast('Failed to update test status', 'error');
+      console.error(err);
+    });
 }
 
-// Confirm toggle with modal
-function confirmToggleTest(testId,newStatus){
-  const test=allTests.find(t=>t.id===testId);
-  if(!test)return;
-  showConfirm(newStatus?'start':'warning',
-    `${newStatus?'Enable':'Disable'} "${test.name}"?`,
-    `<div class="detail-item">
-      <span class="detail-label"><i class="fas fa-book"></i> Test</span>
-      <span class="detail-value accent">${test.name}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label"><i class="fas fa-info-circle"></i> Action</span>
-      <span class="detail-value" style="color:${newStatus?'var(--success)':'var(--danger)'}">${newStatus?'Enable':'Disable'}</span>
-    </div>
-    <div style="margin-top:15px;padding:12px;background:${newStatus?'rgba(16,185,129,.1)':'rgba(239,68,68,.1)'};border-radius:10px;border:1px solid ${newStatus?'rgba(16,185,129,.2)':'rgba(239,68,68,.2)'}">
-      <p style="color:rgba(255,255,255,.7);font-size:12px;margin:0">
-        <i class="fas fa-info-circle"></i> ${newStatus?'Users will be able to take this test.':'Users will NOT be able to take this test.'}
-      </p>
-    </div>`,
-    ()=>toggleTestStatus(testId,newStatus)
+// ========== CONFIRM TOGGLE TEST ==========
+function confirmToggleTest(testId, newStatus) {
+  const test = allTests.find(t => t.id === testId);
+  if (!test) return;
+  
+  const qCount = test.questions ? Object.keys(test.questions).length : 0;
+  const action = newStatus ? 'Enable' : 'Disable';
+  const actionLower = newStatus ? 'enable' : 'disable';
+  
+  showConfirm(
+    newStatus ? 'start' : 'warning',
+    `Are you sure you want to ${actionLower} this test?`,
+    `
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-book"></i> Test Name</span>
+        <span class="detail-value accent">${test.name}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-question-circle"></i> Questions</span>
+        <span class="detail-value">${qCount}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-info-circle"></i> Current Status</span>
+        <span class="detail-value" style="color:${test.enabled !== false ? 'var(--success)' : 'var(--danger)'}">
+          <span class="status-dot ${test.enabled !== false ? 'active' : 'inactive'}"></span>
+          ${test.enabled !== false ? 'Active' : 'Disabled'}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-arrow-right"></i> New Status</span>
+        <span class="detail-value" style="color:${newStatus ? 'var(--success)' : 'var(--danger)'}">
+          <span class="status-dot ${newStatus ? 'active' : 'inactive'}"></span>
+          ${newStatus ? 'Active' : 'Disabled'}
+        </span>
+      </div>
+      <div style="margin-top:20px;padding:15px;background:${newStatus ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'};border-radius:12px;border:1px solid ${newStatus ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}">
+        <p style="color:rgba(255,255,255,0.8);font-size:13px;margin:0;display:flex;align-items:flex-start;gap:10px">
+          <i class="fas ${newStatus ? 'fa-check-circle' : 'fa-exclamation-triangle'}" style="color:${newStatus ? 'var(--success)' : 'var(--warning)'};margin-top:2px"></i>
+          <span>${newStatus 
+            ? 'Users will be able to see and take this test after enabling.' 
+            : 'Users will NOT be able to take this test while disabled. The test will show as "Unavailable".'}</span>
+        </p>
+      </div>
+    `,
+    () => toggleTestStatus(testId, newStatus)
   );
-  const btn=document.getElementById('confirmBtn');
-  btn.className=`btn ${newStatus?'btn-confirm-start':'btn-confirm-warning'}`;
-  btn.innerHTML=`<i class="fas ${newStatus?'fa-eye':'fa-eye-slash'}"></i> ${newStatus?'Enable':'Disable'}`;
+  
+  // Update confirm button styling
+  const confirmBtn = document.getElementById('confirmBtn');
+  confirmBtn.className = `btn ${newStatus ? 'btn-confirm-start' : 'btn-confirm-warning'}`;
+  confirmBtn.innerHTML = `<i class="fas ${newStatus ? 'fa-eye' : 'fa-eye-slash'}"></i> ${action}`;
 }
 
+// ========== CONFIRM DELETE TEST ==========
+function confirmDeleteTest(testId) {
+  const test = allTests.find(t => t.id === testId);
+  if (!test) return;
+  
+  const qCount = test.questions ? Object.keys(test.questions).length : 0;
+  
+  showConfirm('danger',
+    'Are you sure you want to delete this test?',
+    `
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-book"></i> Test Name</span>
+        <span class="detail-value accent">${test.name}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-question-circle"></i> Questions</span>
+        <span class="detail-value">${qCount}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-users"></i> Total Attempts</span>
+        <span class="detail-value">${test.attempts || 0}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label"><i class="fas fa-clock"></i> Time Limit</span>
+        <span class="detail-value">${test.timeLimit} minutes</span>
+      </div>
+      <div style="margin-top:20px;padding:15px;background:rgba(239,68,68,0.1);border-radius:12px;border:1px solid rgba(239,68,68,0.2)">
+        <p style="color:var(--danger);font-size:13px;margin:0;display:flex;align-items:flex-start;gap:10px">
+          <i class="fas fa-exclamation-triangle" style="margin-top:2px"></i>
+          <span><strong>Warning:</strong> This action cannot be undone! All questions and attempt records for this test will be permanently deleted.</span>
+        </p>
+      </div>
+    `,
+    () => deleteTest(testId)
+  );
+}
+
+// ========== DELETE TEST ==========
+function deleteTest(testId) {
+  db.ref(`tests/${testId}`).remove()
+    .then(() => {
+      showToast('Test deleted successfully!', 'success');
+    })
+    .catch(err => {
+      showToast('Failed to delete test', 'error');
+      console.error(err);
+    });
+}
 // Confirm delete test
 function confirmDeleteTest(testId){
   const test=allTests.find(t=>t.id===testId);
