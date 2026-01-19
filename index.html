@@ -54,6 +54,33 @@ color:#fff;font-size:15px;transition:all .3s ease}
 outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.2)}
 /* ========== BEAUTIFUL SEARCH BOX ========== */
   /* Leaderboard Entry Animation */
+/* ========== TOGGLE SWITCH ========== */
+.toggle-switch{position:relative;width:52px;height:26px;cursor:pointer}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:linear-gradient(135deg,#374151,#4b5563);border-radius:50px;transition:all .4s cubic-bezier(.68,-.55,.265,1.55)}
+.toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:all .4s cubic-bezier(.68,-.55,.265,1.55);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.toggle-switch input:checked+.toggle-slider{background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 0 20px rgba(16,185,129,.4)}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(26px)}
+.toggle-switch:hover .toggle-slider::before{transform:scale(1.1)}
+.toggle-switch input:checked:hover+.toggle-slider::before{transform:translateX(26px) scale(1.1)}
+.toggle-wrapper{display:flex;align-items:center;gap:10px}
+.toggle-label{font-size:12px;font-weight:500;min-width:55px;transition:all .3s}
+.toggle-label.enabled{color:var(--success)}
+.toggle-label.disabled{color:rgba(255,255,255,.4)}
+
+/* ========== DISABLED TEST CARD ========== */
+.test-card.disabled-test{opacity:.6;position:relative;pointer-events:none}
+.test-card.disabled-test::before{background:linear-gradient(135deg,#6b7280,#4b5563)!important}
+.test-disabled-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;border-radius:20px;z-index:10}
+.test-disabled-badge{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:10px 20px;border-radius:10px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(239,68,68,.4);animation:badgePop .4s ease}
+@keyframes badgePop{0%{transform:scale(0)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+
+/* ========== ACTION BUTTONS ========== */
+.icon-btn.toggle-on{background:rgba(16,185,129,.2);color:var(--success)}
+.icon-btn.toggle-off{background:rgba(239,68,68,.2);color:var(--danger)}
+.icon-btn.toggle-on:hover{background:var(--success);color:#fff}
+.icon-btn.toggle-off:hover{background:var(--danger);color:#fff}
+  
 .leaderboard-item {
   animation: slideInLeft 0.4s ease both;
 }
@@ -1060,8 +1087,16 @@ Next <i class="fas fa-arrow-right"></i>
 <div class="card admin-card">
 <div style="overflow-x:auto">
 <table class="admin-table">
-<thead><tr><th>Test Name</th><th>Questions</th><th>Attempts</th><th>Actions</th></tr></thead>
-<tbody id="testsTableBody"></tbody>
+  <thead>
+    <tr>
+      <th>Test Name</th>
+      <th>Questions</th>
+      <th>Attempts</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="testsTableBody"></tbody>
 </table>
 </div>
 </div>
@@ -1451,26 +1486,37 @@ function deleteUser(userId) {
 }
 
 // Tests Management
-function loadAdminTests() {
-  db.ref('tests').on('value', snap => {
-    allTests = [];
-    const tbody = document.getElementById('testsTableBody');
-    tbody.innerHTML = '';
-    
-    if (!snap.exists()) return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.5)">No tests found</td></tr>';
-    
-    snap.forEach(child => {
-      const test = { id: child.key, ...child.val() };
+function loadAdminTests(){
+  db.ref('tests').on('value',snap=>{
+    allTests=[];
+    const tbody=document.getElementById('testsTableBody');
+    tbody.innerHTML='';
+    if(!snap.exists())return tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,.5);padding:40px">No tests found</td></tr>';
+    snap.forEach(child=>{
+      const test={id:child.key,...child.val()};
       allTests.push(test);
-      const qCount = test.questions ? Object.keys(test.questions).length : 0;
-      tbody.innerHTML += `
+      const qCount=test.questions?Object.keys(test.questions).length:0;
+      const isEnabled=test.enabled!==false;
+      tbody.innerHTML+=`
         <tr>
           <td>${test.name}</td>
           <td>${qCount} questions</td>
-          <td>${test.attempts || 0}</td>
+          <td>${test.attempts||0}</td>
+          <td>
+            <div class="toggle-wrapper">
+              <label class="toggle-switch">
+                <input type="checkbox" ${isEnabled?'checked':''} onchange="toggleTestStatus('${child.key}',this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-label ${isEnabled?'enabled':'disabled'}">${isEnabled?'Active':'Disabled'}</span>
+            </div>
+          </td>
           <td class="action-btns">
+            <button class="icon-btn ${isEnabled?'toggle-on':'toggle-off'}" onclick="confirmToggleTest('${child.key}',${!isEnabled})" title="${isEnabled?'Disable':'Enable'}">
+              <i class="fas ${isEnabled?'fa-eye':'fa-eye-slash'}"></i>
+            </button>
             <button class="icon-btn edit" onclick="openEditTest('${child.key}')"><i class="fas fa-edit"></i></button>
-            <button class="icon-btn delete" onclick="deleteTest('${child.key}')"><i class="fas fa-trash"></i></button>
+            <button class="icon-btn delete" onclick="confirmDeleteTest('${child.key}')"><i class="fas fa-trash"></i></button>
           </td>
         </tr>`;
     });
@@ -1603,21 +1649,20 @@ function showSection(section) {
   if (section === 'leaderboard') loadLeaderboard();
 }
 
-function loadTests() {
-  const grid = document.getElementById('testsGrid');
-  
-  db.ref('tests').on('value', snap => {
-    grid.innerHTML = '';
-    if (!snap.exists()) return grid.innerHTML = '<div class="card" style="text-align:center"><p style="color:rgba(255,255,255,.6)">No tests available</p></div>';
-    
-    snap.forEach(child => {
-      const test = { id: child.key, ...child.val() };
-      const qCount = test.questions ? Object.keys(test.questions).length : 0;
-      const userAttempts = currentUser.testAttempts?.[child.key] || 0;
-      const canTake = currentUser.points >= 4 && qCount > 0;
-      
-      grid.innerHTML += `
-        <div class="card test-card" data-name="${test.name.toLowerCase()}">
+function loadTests(){
+  const grid=document.getElementById('testsGrid');
+  db.ref('tests').on('value',snap=>{
+    grid.innerHTML='';
+    if(!snap.exists())return grid.innerHTML='<div class="card" style="text-align:center"><p style="color:rgba(255,255,255,.6)">No tests available</p></div>';
+    snap.forEach(child=>{
+      const test={id:child.key,...child.val()};
+      const qCount=test.questions?Object.keys(test.questions).length:0;
+      const userAttempts=currentUser.testAttempts?.[child.key]||0;
+      const isEnabled=test.enabled!==false;
+      const canTake=currentUser.points>=4&&qCount>0&&isEnabled;
+      grid.innerHTML+=`
+        <div class="card test-card ${!isEnabled?'disabled-test':''}" data-name="${test.name.toLowerCase()}">
+          ${!isEnabled?`<div class="test-disabled-overlay"><div class="test-disabled-badge"><i class="fas fa-lock"></i>Unavailable</div></div>`:''}
           <div class="test-header">
             <h3 class="test-title">${test.name}</h3>
             <span class="test-badge">${test.timeLimit} min</span>
@@ -1625,11 +1670,11 @@ function loadTests() {
           <div class="test-info">
             <span><i class="fas fa-question-circle"></i> ${qCount} Questions</span>
             <span><i class="fas fa-redo"></i> ${userAttempts} Attempts</span>
-            <span><i class="fas fa-users"></i> ${test.attempts || 0} Total</span>
+            <span><i class="fas fa-users"></i> ${test.attempts||0} Total</span>
           </div>
           <div class="test-actions">
-            <button class="btn btn-primary" onclick="confirmStartTest('${child.key}')" ${qCount === 0 ? 'disabled style="opacity:.5"' : ''}>
-              <i class="fas fa-play"></i> Start (4 pts)
+            <button class="btn btn-primary" ${canTake?`onclick="confirmStartTest('${child.key}')"`:'disabled style="opacity:.5"'}>
+              <i class="fas fa-${isEnabled?'play':'lock'}"></i> ${isEnabled?'Start (4 pts)':'Unavailable'}
             </button>
           </div>
         </div>`;
@@ -2196,15 +2241,53 @@ function executeConfirmAction() {
 // ========== START TEST CONFIRMATION ==========
 function confirmStartTest(testId) {
   db.ref(`tests/${testId}`).once('value', snap => {
-    if (!snap.exists()) return showToast('Test not found', 'error');
+    if (!snap.exists()) {
+      return showToast('Test not found', 'error');
+    }
     
     const test = { id: testId, ...snap.val() };
     const qCount = test.questions ? Object.keys(test.questions).length : 0;
+    const isEnabled = test.enabled !== false;
     
-    if (qCount === 0) {
-      return showToast('No questions in this test', 'error');
+    // Check if test is disabled
+    if (!isEnabled) {
+      showConfirm('warning',
+        'This test is currently unavailable.',
+        `
+          <div style="text-align:center;padding:30px 10px">
+            <div style="width:80px;height:80px;background:rgba(239,68,68,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+              <i class="fas fa-lock" style="font-size:36px;color:var(--danger)"></i>
+            </div>
+            <p style="color:rgba(255,255,255,0.8);margin-bottom:10px">The administrator has disabled this test.</p>
+            <p style="color:rgba(255,255,255,0.5);font-size:13px">Please try again later or contact support.</p>
+          </div>
+        `,
+        () => {}
+      );
+      document.getElementById('confirmBtn').style.display = 'none';
+      return;
     }
     
+    // Check if test has questions
+    if (qCount === 0) {
+      showConfirm('warning',
+        'This test has no questions yet.',
+        `
+          <div style="text-align:center;padding:30px 10px">
+            <div style="width:80px;height:80px;background:rgba(245,158,11,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+              <i class="fas fa-question-circle" style="font-size:36px;color:var(--warning)"></i>
+            </div>
+            <p style="color:rgba(255,255,255,0.8);margin-bottom:10px">Questions are being prepared for this test.</p>
+            <p style="color:rgba(255,255,255,0.5);font-size:13px">Please check back later.</p>
+          </div>
+        `,
+        () => {}
+      );
+      document.getElementById('confirmBtn').style.display = 'none';
+      return;
+    }
+    
+    // Check if user has enough points
     if (currentUser.points < 4) {
       showConfirm('warning', 
         'You don\'t have enough points to take this test.',
@@ -2217,8 +2300,14 @@ function confirmStartTest(testId) {
             <span class="detail-label"><i class="fas fa-tag"></i> Required</span>
             <span class="detail-value">4 points</span>
           </div>
-          <div style="text-align:center;margin-top:15px;color:rgba(255,255,255,0.6);font-size:13px;">
-            <i class="fas fa-info-circle"></i> Contact admin to add more points
+          <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-minus-circle"></i> Shortage</span>
+            <span class="detail-value" style="color:var(--danger)">${4 - currentUser.points} points</span>
+          </div>
+          <div style="text-align:center;margin-top:20px;padding:15px;background:rgba(245,158,11,0.1);border-radius:12px;border:1px solid rgba(245,158,11,0.2)">
+            <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0">
+              <i class="fas fa-info-circle"></i> Contact administrator to add more points to your account.
+            </p>
           </div>
         `,
         () => {}
@@ -2228,6 +2317,53 @@ function confirmStartTest(testId) {
       document.getElementById('confirmBtn').style.display = 'none';
       return;
     }
+    
+    // All checks passed - show start confirmation
+    const pointsAfter = currentUser.points - 4;
+    
+    showConfirm('startTest',
+      `You are about to start "${test.name}". Make sure you're ready!`,
+      `
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-book"></i> Test Name</span>
+          <span class="detail-value accent">${test.name}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-question-circle"></i> Questions</span>
+          <span class="detail-value">${qCount} questions</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label"><i class="fas fa-clock"></i> Time Limit</span>
+          <span class="detail-value">${test.timeLimit} minutes</span>
+        </div>
+        <div class="points-deduction">
+          <div class="points-before">
+            <span>Current</span>
+            <strong>${currentUser.points} pts</strong>
+          </div>
+          <div class="points-arrow"><i class="fas fa-arrow-right"></i></div>
+          <div class="points-after">
+            <span>After</span>
+            <strong>${pointsAfter} pts</strong>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div class="cost-badge">
+            <i class="fas fa-coins"></i> 4 points will be deducted
+          </div>
+        </div>
+        <div style="margin-top:20px;padding:15px;background:rgba(99,102,241,0.1);border-radius:12px;border:1px solid rgba(99,102,241,0.2)">
+          <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0">
+            <i class="fas fa-info-circle"></i> Once you start, the timer will begin. Make sure you have a stable connection and enough time to complete the test.
+          </p>
+        </div>
+      `,
+      (testId) => startTestConfirmed(testId),
+      testId
+    );
+    document.getElementById('confirmBtn').style.display = '';
+  });
+}
     
     const pointsAfter = currentUser.points - 4;
     
@@ -2491,6 +2627,57 @@ function viewCorrectionConfirmed() {
   showToast('Corrections loaded! 📚', 'success');
 }
 
+// Toggle test status
+function toggleTestStatus(testId,enabled){
+  db.ref(`tests/${testId}/enabled`).set(enabled).then(()=>{
+    showToast(enabled?'Test enabled!':'Test disabled!',enabled?'success':'warning');
+  });
+}
+
+// Confirm toggle with modal
+function confirmToggleTest(testId,newStatus){
+  const test=allTests.find(t=>t.id===testId);
+  if(!test)return;
+  showConfirm(newStatus?'start':'warning',
+    `${newStatus?'Enable':'Disable'} "${test.name}"?`,
+    `<div class="detail-item">
+      <span class="detail-label"><i class="fas fa-book"></i> Test</span>
+      <span class="detail-value accent">${test.name}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label"><i class="fas fa-info-circle"></i> Action</span>
+      <span class="detail-value" style="color:${newStatus?'var(--success)':'var(--danger)'}">${newStatus?'Enable':'Disable'}</span>
+    </div>
+    <div style="margin-top:15px;padding:12px;background:${newStatus?'rgba(16,185,129,.1)':'rgba(239,68,68,.1)'};border-radius:10px;border:1px solid ${newStatus?'rgba(16,185,129,.2)':'rgba(239,68,68,.2)'}">
+      <p style="color:rgba(255,255,255,.7);font-size:12px;margin:0">
+        <i class="fas fa-info-circle"></i> ${newStatus?'Users will be able to take this test.':'Users will NOT be able to take this test.'}
+      </p>
+    </div>`,
+    ()=>toggleTestStatus(testId,newStatus)
+  );
+  const btn=document.getElementById('confirmBtn');
+  btn.className=`btn ${newStatus?'btn-confirm-start':'btn-confirm-warning'}`;
+  btn.innerHTML=`<i class="fas ${newStatus?'fa-eye':'fa-eye-slash'}"></i> ${newStatus?'Enable':'Disable'}`;
+}
+
+// Confirm delete test
+function confirmDeleteTest(testId){
+  const test=allTests.find(t=>t.id===testId);
+  if(!test)return;
+  showConfirm('danger',
+    `Delete "${test.name}"? This cannot be undone!`,
+    `<div class="detail-item">
+      <span class="detail-label"><i class="fas fa-book"></i> Test</span>
+      <span class="detail-value accent">${test.name}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label"><i class="fas fa-question-circle"></i> Questions</span>
+      <span class="detail-value">${test.questions?Object.keys(test.questions).length:0}</span>
+    </div>`,
+    ()=>deleteTest(testId)
+  );
+}
+  
 // Logout
 function logout() {
   db.ref(`users/${currentUser.id}`).off();
